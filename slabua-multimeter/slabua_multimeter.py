@@ -239,13 +239,15 @@ def screen_battery():
     else:
         display.set_pen(10, 255, 10)
     
-    display.rectangle(12, 59, 16, 3)
-    display.rectangle(19, 52, 3, 16)
-    display.rectangle(52, 59, 16, 3)
-    display.rectangle(0, 71, 80, 50)
+    display.rectangle(12, 55, 16, 3)
+    display.rectangle(19, 48, 3, 16)
+    display.rectangle(52, 55, 16, 3)
+    display.rectangle(10, 67, 20, 4)
+    display.rectangle(50, 67, 20, 4)
+    display.rectangle(0, 71, 80, 49)
     
     display.set_pen(blackPen)
-    display.rectangle(2, 73, 76, 46)
+    display.rectangle(2, 73, 76, 45)
     
     if reading < 11:  # TODO move to a function with interval and colours, same for other if-else switches
         display.set_pen(255, 10, 10)
@@ -257,20 +259,29 @@ def screen_battery():
     if reading < 3:
         pass
     elif reading > 3 and reading < 5:
-        display.rectangle(2, 108, 76, 12)
+        display.rectangle(2, 111, 76, 7)
     elif reading > 5 and reading < 8:
-        display.rectangle(2, 95, 76, 24)
+        display.rectangle(2, 98, 76, 20)
     elif reading > 8 and reading < 11:
-        display.rectangle(2, 82, 76, 38)
+        display.rectangle(2, 85, 76, 33)
     else:
-        display.rectangle(2, 73, 76, 48)
+        display.rectangle(2, 73, 76, 45)
+    
+    display.rectangle(2, 73, 3, 2)
+    display.rectangle(75, 73, 3, 2)
+    display.rectangle(2, 116, 3, 2)
+    display.rectangle(75, 116, 3, 2)
     
     display.text("{:.1f}".format(reading) + "", 90, 65, width, 9)
     
     display.set_pen(blackPen)
+    display.rectangle(0, 71, 3, 2)
+    display.rectangle(77, 71, 3, 2)
     display.rectangle(0, 82, 80, 3)
     display.rectangle(0, 94, 80, 3)
-    display.rectangle(0, 107, 80, 3)
+    display.rectangle(0, 106, 80, 3)
+    display.rectangle(0, 118, 3, 2)
+    display.rectangle(77, 118, 3, 2)
     
     display.update()
     utime.sleep(0.5)
@@ -328,7 +339,7 @@ def screen_temperature():
     #    display.set_led(64, 0, 0)
     #if temperature < 21:
     #    display.set_led(0, 0, 64)
-     
+    
     # draws the reading as a tall, thin rectangle
     display.rectangle(current_x, height - (int(temperature) * 2), 8, height)
     
