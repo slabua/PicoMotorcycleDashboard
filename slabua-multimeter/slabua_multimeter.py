@@ -239,7 +239,38 @@ def screen_battery():
     else:
         display.set_pen(10, 255, 10)
     
-    display.text("{:.2f}".format(reading) + " V", 10, 50, width, 6)
+    display.rectangle(12, 59, 16, 3)
+    display.rectangle(19, 52, 3, 16)
+    display.rectangle(52, 59, 16, 3)
+    display.rectangle(0, 71, 80, 50)
+    
+    display.set_pen(blackPen)
+    display.rectangle(2, 73, 76, 46)
+    
+    if reading < 11:  # TODO move to a function with interval and colours, same for other if-else switches
+        display.set_pen(255, 10, 10)
+    elif reading >= 11 and reading < 12:
+        display.set_pen(255, 128, 10)
+    else:
+        display.set_pen(10, 255, 10)
+    
+    if reading < 3:
+        pass
+    elif reading > 3 and reading < 5:
+        display.rectangle(2, 108, 76, 12)
+    elif reading > 5 and reading < 8:
+        display.rectangle(2, 95, 76, 24)
+    elif reading > 8 and reading < 11:
+        display.rectangle(2, 82, 76, 38)
+    else:
+        display.rectangle(2, 73, 76, 48)
+    
+    display.text("{:.1f}".format(reading) + "", 90, 65, width, 9)
+    
+    display.set_pen(blackPen)
+    display.rectangle(0, 82, 80, 3)
+    display.rectangle(0, 94, 80, 3)
+    display.rectangle(0, 107, 80, 3)
     
     display.update()
     utime.sleep(0.5)
