@@ -189,9 +189,14 @@ def screen_home():
     display.rectangle(0, int(height / 4 * 3), width, 2)
     #display.text(SCREENS[current_screen], 10, 8, width, 3)
     display.text("Fuel", 10, 8, width, 3)
-    
-    reading = scale_value(acq_adc(adc0), 0, 15)
     display.text("Batt", 10, 40, width, 3)
+    display.text("Temp", 10, 75, width, 3)
+    display.text("RPM", 10, 108, width, 3)
+    
+    display.set_clip(80, 0, 240-80, height)
+    
+    # Battery
+    reading = scale_value(acq_adc(adc0), 0, 15)
     
     if reading < 11:  # TODO move to a function with interval and colours, same for other if-else switches
         display.set_pen(255, 10, 10)
@@ -203,11 +208,11 @@ def screen_home():
     display.text("{:.2f}".format(reading), 150, 40, width, 3)
     display.set_pen(whitePen)
     
+    # Temperature
     #reading = sensor_temp.read_u16() * CONVERSION_FACTOR
     #temperature = 27 - (reading - 0.706) / 0.001721
     temperature = acq_temp(sensor_temp)
     
-    display.text("Temp", 10, 75, width, 3)
     display.set_pen(greenPen)
     
     if temperature > 24:  # TODO move to a function with interval and colours, same for other if-else switches
@@ -218,7 +223,7 @@ def screen_home():
     display.text("{:.2f}".format(temperature), 150, 75, width, 3)
     display.set_pen(whitePen)
     
-    display.text("RPM", 10, 108, width, 3)
+    display.remove_clip()
     
     display.update()
     utime.sleep(0.25)
