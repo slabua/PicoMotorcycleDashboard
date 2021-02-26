@@ -173,7 +173,10 @@ current_screen = 0
 
 
 # Screens
+temp_x = 150
 def screen_home():
+    global temp_x
+    
     #print(current_screen)
     
     display_clear()
@@ -188,12 +191,13 @@ def screen_home():
     display.rectangle(0, int(height / 2), width, 2)
     display.rectangle(0, int(height / 4 * 3), width, 2)
     #display.text(SCREENS[current_screen], 10, 8, width, 3)
+    
     display.text("Fuel", 10, 8, width, 3)
     display.text("Batt", 10, 40, width, 3)
     display.text("Temp", 10, 75, width, 3)
     display.text("RPM", 10, 108, width, 3)
     
-    display.set_clip(80, 0, 240-80, height)
+    display.set_clip(100, 0, 240-100, height)
     
     # Battery
     reading = scale_value(acq_adc(adc0), 0, 15)
@@ -209,6 +213,10 @@ def screen_home():
     display.set_pen(whitePen)
     
     # Temperature
+    temp_x_offset = 100
+    temp_x -= 10
+    if temp_x < -150:
+        temp_x = 250
     #reading = sensor_temp.read_u16() * CONVERSION_FACTOR
     #temperature = 27 - (reading - 0.706) / 0.001721
     temperature = acq_temp(sensor_temp)
@@ -220,13 +228,24 @@ def screen_home():
     if temperature < 19:
         display.set_pen(bluePen)
     
-    display.text("{:.2f}".format(temperature), 150, 75, width, 3)
+    display.text("{:.2f}".format(temperature), temp_x, 75, width, 3)
     display.set_pen(whitePen)
+    
+    ds_sensor.convert_temp()
+    #utime.sleep_ms(250)
+    for ows in range(onewire_sensors):
+        temperature = ds_sensor.read_temp(roms[ows])
+        display.set_pen(greenPen)
+        if temperature > 24:  # TODO move to a function with interval and colours, same for other if-else switches
+            display.set_pen(redPen)
+        if temperature < 19:
+            display.set_pen(bluePen)
+        display.text("{:.2f}".format(temperature), temp_x + (temp_x_offset * (ows + 1)), 75, width, 3)
     
     display.remove_clip()
     
     display.update()
-    utime.sleep(0.25)
+    #utime.sleep(0.25)
 
 def screen_battery():
     reading = scale_value(acq_adc(adc0), 0, 15)
