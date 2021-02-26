@@ -203,11 +203,11 @@ def screen_home():
     #display.text(SCREENS[current_screen], 10, 8, width, 3)
     
     display.text("Fuel", 10, 8, width, 3)
-    display.text("Batt", 10, 40, width, 3)
+    display.text("Batt", 10, 41, width, 3)
     display.text("Temp", 10, 75, width, 3)
     display.text("RPM", 10, 108, width, 3)
     
-    display.set_clip(100, 0, 240-100, height)
+    display.set_clip(100, 0, 240-100-10, height)
     
     # Battery
     reading = scale_value(acq_adc(adc0), 0, 15)
@@ -219,7 +219,7 @@ def screen_home():
     else:
         display.set_pen(10, 255, 10)
     
-    display.text("{:.2f}".format(reading), 150, 40, width, 3)
+    display.text("{:.2f}".format(reading), 150, 41, width, 3)
     display.set_pen(whitePen)
     
     # Temperature
