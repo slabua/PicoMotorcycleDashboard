@@ -183,10 +183,20 @@ def screen_home():
     
     display.set_pen(whitePen)
     display.rectangle(0, 0, width, height)
+    
     display.set_pen(blackPen)
     display.rectangle(2, 2, width - 4, height - 4)
+    display.rectangle(0, 0, 2, 2)
+    display.rectangle(width - 2, 0, 2, 2)
+    display.rectangle(0, height - 2, 2, 2)
+    display.rectangle(width - 2, height - 2, 2, 2)
     
     display.set_pen(whitePen)
+    display.rectangle(1, 1, 2, 2)
+    display.rectangle(width - 3, 1, 2, 2)
+    display.rectangle(1, height - 3, 2, 2)
+    display.rectangle(width - 3, height - 3, 2, 2)
+    
     display.rectangle(0, int(height / 4), width, 2)
     display.rectangle(0, int(height / 2), width, 2)
     display.rectangle(0, int(height / 4 * 3), width, 2)
