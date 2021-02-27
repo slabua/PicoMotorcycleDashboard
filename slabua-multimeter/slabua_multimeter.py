@@ -189,7 +189,7 @@ current_screen = 0
 
 # Screens
 CLIP_MARGIN = 6
-FUEL_RESERVE = 20
+FUEL_RESERVE = 25
 RPM_MAX = 12000
 RPM_REDLINE = 10000
 
@@ -241,6 +241,11 @@ def screen_home():
         display.set_pen(redPen)
         display.text("R", width - 25, 8, width, 3)
     display.rectangle(100, 5, round((width - 100 - CLIP_MARGIN) * fuel / 100), 25)
+    
+    display.set_pen(blackPen)
+    for r in range(100, width - CLIP_MARGIN, 34):
+        display.rectangle(r, 5, 2, 25)
+    
     display.set_pen(whitePen)
     
     # Battery
@@ -326,6 +331,11 @@ def screen_home():
         display.rectangle(100 + at_redline_width, 106, redline_delta, 24)
     else:
         display.rectangle(100, 106, round((width - 100) * rpm / RPM_MAX), 24)
+    
+    display.set_pen(blackPen)
+    for r in range(100, width - CLIP_MARGIN, 10):
+        display.rectangle(r, 106, 2, 24)
+    
     display.set_pen(whitePen)
     
     display.remove_clip()
