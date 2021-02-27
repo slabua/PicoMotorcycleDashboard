@@ -246,7 +246,7 @@ def screen_home():
     fuel = scale_value(acq_adc(adc1), 0, 100)
     #print(fuel)
     
-    display.set_pen(whitePen)
+    display.set_pen(255, 196, 0)
     if fuel < FUEL_RESERVE:
         display.set_pen(redPen)
         display.text("R", width - 25, 8, width, 3)
@@ -330,13 +330,13 @@ def screen_home():
     rpm = scale_value(acq_adc(adc2), 0, RPM_MAX)
     #print(rpm)
     
-    display.set_pen(whitePen)
     at_redline_width = round((width - 100 - CLIP_MARGIN) * RPM_REDLINE / RPM_MAX)
     rpm_width = round((width - 100 - CLIP_MARGIN) * rpm / RPM_MAX)
     redline_delta = rpm_width - at_redline_width
     
+    display.set_pen(cyanPen)
     if rpm > RPM_REDLINE:
-        display.set_pen(whitePen)
+        #display.set_pen(0, 196, 196)
         display.rectangle(100, 106, at_redline_width, 24)
         display.set_pen(redPen)
         display.rectangle(100 + at_redline_width, 106, redline_delta, 24)
@@ -539,7 +539,7 @@ loading = ['-', '\\', '|', '/']
 t = 0
 
 while True:
-    utime.sleep(0.5)
+    utime.sleep(0.1)  # 0.5
     
     in_use_led(in_use)
     
