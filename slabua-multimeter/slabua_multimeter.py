@@ -188,9 +188,14 @@ current_screen = 0
 
 
 # Screens
+CLIP_MARGIN = 6
+FUEL_RESERVE = 20
+RPM_MAX = 12000
+RPM_REDLINE = 10000
+
 temp_x = 150
 temp_x_shift = -10
-#temp_x_offset = 100
+
 def screen_home():
     global temp_x
     global temp_x_shift
@@ -225,7 +230,18 @@ def screen_home():
     display.text("Temp", 10, 75, width, 3)
     display.text("RPM", 10, 108, width, 3)
     
-    display.set_clip(100, 0, 240-100-10, height)
+    display.set_clip(100, 0, 240 - 100 - CLIP_MARGIN, height)
+    
+    # Fuel
+    fuel = scale_value(acq_adc(adc1), 0, 100)
+    #print(fuel)
+    
+    display.set_pen(whitePen)
+    if fuel < FUEL_RESERVE:
+        display.set_pen(redPen)
+        display.text("R", width - 25, 8, width, 3)
+    display.rectangle(100, 5, round((width - 100 - CLIP_MARGIN) * fuel / 100), 25)
+    display.set_pen(whitePen)
     
     # Battery
     reading = scale_value(acq_adc(adc0), 0, 15)
@@ -293,6 +309,24 @@ def screen_home():
             if temperature < 19:
                 display.set_pen(bluePen)
             display.text("{:.2f}".format(temperature), temp_x + (temp_x_offset * (ows + 1)), 75, width, 3)
+    
+    # RPM
+    rpm = scale_value(acq_adc(adc2), 0, RPM_MAX)
+    #print(rpm)
+    
+    display.set_pen(whitePen)
+    at_redline_width = round((width - 100 - CLIP_MARGIN) * RPM_REDLINE / RPM_MAX)
+    rpm_width = round((width - 100 - CLIP_MARGIN) * rpm / RPM_MAX)
+    redline_delta = rpm_width - at_redline_width
+    
+    if rpm > RPM_REDLINE:
+        display.set_pen(whitePen)
+        display.rectangle(100, 106, at_redline_width, 24)
+        display.set_pen(redPen)
+        display.rectangle(100 + at_redline_width, 106, redline_delta, 24)
+    else:
+        display.rectangle(100, 106, round((width - 100) * rpm / RPM_MAX), 24)
+    display.set_pen(whitePen)
     
     display.remove_clip()
     
@@ -364,6 +398,9 @@ def screen_battery():
 
 def screen_fuel():
     print(current_screen)
+    
+    fuel = acq_adc(adc1)
+    print(fuel)
 
 def screen_temperature():
     global current_x
