@@ -415,6 +415,11 @@ def acq_temp(adc):
     reading = acq_adc(adc) * CONVERSION_FACTOR
     return 27 - (reading - 0.706) / 0.001721
 
+def blink_led(duration, r, g, b):
+    display.set_led(r, g, b)
+    utime.sleep(duration)
+    display.set_led(0, 0, 0)
+
 
 # Main
 loading = ['-', '\\', '|', '/']
@@ -431,6 +436,7 @@ while True:
     if len(roms) != onewire_sensors:
         print("The number of connected 1-Wire devices has been updated.")
         onewire_sensors = len(roms)
+        blink_led(0.2, 255, 255, 0)
     
     if current_screen != 0 and current_screen != 1 and current_screen != 3:
         display_clear()
