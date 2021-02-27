@@ -137,6 +137,7 @@ def int_y(pin):
     global in_use
     global current_x
     global temp_id
+    global SPLIT_BARS
     
     button_y.irq(handler=None)
     
@@ -146,6 +147,8 @@ def int_y(pin):
     if current_screen == 0:
         if temp_x_shift == 0:
             temp_id = (temp_id + 1) % (1 + onewire_sensors)
+        else:
+            SPLIT_BARS = not SPLIT_BARS
     
     if current_screen == 3:
         display_clear()
@@ -192,6 +195,7 @@ CLIP_MARGIN = 6
 FUEL_RESERVE = 25
 RPM_MAX = 12000
 RPM_REDLINE = 10000
+SPLIT_BARS = True
 
 temp_x = 150
 temp_x_shift = -10
@@ -242,9 +246,10 @@ def screen_home():
         display.text("R", width - 25, 8, width, 3)
     display.rectangle(100, 5, round((width - 100 - CLIP_MARGIN) * fuel / 100), 25)
     
-    display.set_pen(blackPen)
-    for r in range(100, width - CLIP_MARGIN, 34):
-        display.rectangle(r, 5, 2, 25)
+    if SPLIT_BARS:
+        display.set_pen(blackPen)
+        for r in range(100, width - CLIP_MARGIN, 34):
+            display.rectangle(r, 5, 2, 25)
     
     display.set_pen(whitePen)
     
@@ -332,9 +337,10 @@ def screen_home():
     else:
         display.rectangle(100, 106, round((width - 100) * rpm / RPM_MAX), 24)
     
-    display.set_pen(blackPen)
-    for r in range(100, width - CLIP_MARGIN, 10):
-        display.rectangle(r, 106, 2, 24)
+    if SPLIT_BARS:
+        display.set_pen(blackPen)
+        for r in range(100, width - CLIP_MARGIN, 10):
+            display.rectangle(r, 106, 2, 24)
     
     display.set_pen(whitePen)
     
