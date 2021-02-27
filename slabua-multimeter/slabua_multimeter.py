@@ -81,6 +81,7 @@ def int_a(pin):
     in_use = True
     timer.init(freq=(1 / USE_TIMEOUT), mode=machine.Timer.PERIODIC, callback=set_in_use)
     
+    display.remove_clip()
     display_clear()
     
     utime.sleep(BUTTON_DEBOUNCE_TIME)
