@@ -120,7 +120,7 @@ def int_x(pin):
     if current_screen == 0:
         if temp_x_shift == 0:
             temp_x_shift = -10
-            temp_id = 0
+            #temp_id = 0
         else:
             temp_x_shift = 0
             temp_x = 150
