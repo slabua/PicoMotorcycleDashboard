@@ -108,11 +108,21 @@ def int_x(pin):
     global in_use
     global temp_id
     global current_x
+    global temp_x
+    global temp_x_shift
     
     button_x.irq(handler=None)
     
     print("Interrupted (X)")
     set_in_use(in_use)
+    
+    if current_screen == 0:
+        if temp_x_shift == 0:
+            temp_x_shift = -10
+            temp_id = 0
+        else:
+            temp_x_shift = 0
+            temp_x = 150
     
     if current_screen == 3:
         display_clear()
@@ -126,11 +136,16 @@ def int_y(pin):
     """TODO SCREEN 3 Clear view"""
     global in_use
     global current_x
+    global temp_id
     
     button_y.irq(handler=None)
     
     print("Interrupted (Y)")
     set_in_use(in_use)
+    
+    if current_screen == 0:
+        if temp_x_shift == 0:
+            temp_id = (temp_id + 1) % (1 + onewire_sensors)
     
     if current_screen == 3:
         display_clear()
@@ -174,8 +189,11 @@ current_screen = 0
 
 # Screens
 temp_x = 150
+temp_x_shift = -10
+#temp_x_offset = 100
 def screen_home():
     global temp_x
+    global temp_x_shift
     
     #print(current_screen)
     
@@ -223,34 +241,58 @@ def screen_home():
     display.set_pen(whitePen)
     
     # Temperature
-    temp_x_offset = 100
-    temp_x -= 10
-    if temp_x < -150:
-        temp_x = 250
-    #reading = sensor_temp.read_u16() * CONVERSION_FACTOR
-    #temperature = 27 - (reading - 0.706) / 0.001721
-    temperature = acq_temp(sensor_temp)
-    
-    display.set_pen(greenPen)
-    
-    if temperature > 24:  # TODO move to a function with interval and colours, same for other if-else switches
-        display.set_pen(redPen)
-    if temperature < 19:
-        display.set_pen(bluePen)
-    
-    display.text("{:.2f}".format(temperature), temp_x, 75, width, 3)
-    display.set_pen(whitePen)
-    
-    ds_sensor.convert_temp()
-    #utime.sleep_ms(250)
-    for ows in range(onewire_sensors):
-        temperature = ds_sensor.read_temp(roms[ows])
+    # TODO this part needs a lot of refactoring
+    if temp_x_shift == 0:
+        if temp_id == 0:
+            # the following two lines do some maths to convert the number from the temp sensor into celsius
+            #utime.sleep(0.75)
+            temperature = acq_temp(sensor_temp)
+        else:
+            ds_sensor.convert_temp()
+            #utime.sleep_ms(750)
+            #utime.sleep(1)
+            temperature = ds_sensor.read_temp(roms[temp_id - 1])
+        
         display.set_pen(greenPen)
+        
         if temperature > 24:  # TODO move to a function with interval and colours, same for other if-else switches
             display.set_pen(redPen)
         if temperature < 19:
             display.set_pen(bluePen)
-        display.text("{:.2f}".format(temperature), temp_x + (temp_x_offset * (ows + 1)), 75, width, 3)
+        
+        display.text("T" + str(temp_id) + ":", temp_x - 50, 75, width, 3)
+        display.text("{:.2f}".format(temperature), temp_x, 75, width, 3)
+        display.set_pen(whitePen)
+        
+    else:
+        temp_x_offset = 100
+        temp_x += temp_x_shift
+        if temp_x < -150:
+            temp_x = 250
+        #reading = sensor_temp.read_u16() * CONVERSION_FACTOR
+        #temperature = 27 - (reading - 0.706) / 0.001721
+        temperature = acq_temp(sensor_temp)
+        
+        display.set_pen(greenPen)
+        
+        if temperature > 24:  # TODO move to a function with interval and colours, same for other if-else switches
+            display.set_pen(redPen)
+        if temperature < 19:
+            display.set_pen(bluePen)
+        
+        display.text("{:.2f}".format(temperature), temp_x, 75, width, 3)
+        display.set_pen(whitePen)
+        
+        ds_sensor.convert_temp()
+        #utime.sleep_ms(250)
+        for ows in range(onewire_sensors):
+            temperature = ds_sensor.read_temp(roms[ows])
+            display.set_pen(greenPen)
+            if temperature > 24:  # TODO move to a function with interval and colours, same for other if-else switches
+                display.set_pen(redPen)
+            if temperature < 19:
+                display.set_pen(bluePen)
+            display.text("{:.2f}".format(temperature), temp_x + (temp_x_offset * (ows + 1)), 75, width, 3)
     
     display.remove_clip()
     
