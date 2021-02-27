@@ -385,11 +385,14 @@ def screen_battery():
         display.rectangle(50 - batt_w_diff, 67, 20, 4)
     
     display.set_pen(blackPen)
+    display.rectangle(14, 70, 12, 3)
     display.rectangle(2, 73, 76 - batt_w_diff, 45)
     display.rectangle(0, 71, 3, 2)
     display.rectangle(77 - batt_w_diff, 71, 3, 2)
     display.rectangle(0, 118, 3, 2)
     display.rectangle(77 - batt_w_diff, 118, 3, 2)
+    if LARGE_BATTERY:
+        display.rectangle(54, 70, 12, 3)
     
     if reading < 11:  # TODO move to a function with interval and colours, same for other if-else switches
         display.set_pen(255, 10, 10)
