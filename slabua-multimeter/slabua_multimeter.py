@@ -92,11 +92,34 @@ def int_b(pin):
     """TODO currently ALL SCREENS Brightness selection, later perhaps Palette selection"""
     global in_use
     global bv
+    global SPLIT_BARS
+    global info_x
     
     button_b.irq(handler=None)
     
     print("Interrupted (B)")
     set_in_use(in_use)
+    
+    if display.is_pressed(display.BUTTON_Y):
+        info_x = 250
+        SPLIT_BARS = not SPLIT_BARS
+        
+        display.remove_clip()
+        display_clear()
+        
+        while display.is_pressed(display.BUTTON_Y):
+            if info_x < -5000:
+                info_x = 250
+            else:
+                info_x -= 10
+            
+            display_clear()
+            display.set_pen(greenPen)
+            display.text("Created by Salvatore La Bua - http://twitter.com/slabua", info_x, 8, 10000, 16)
+            
+            display.update()
+            
+            utime.sleep(0.01)
     
     bv = (bv + 1) % len(BACKLIGHT_VALUES)
     display.set_backlight(BACKLIGHT_VALUES[bv])
@@ -205,6 +228,8 @@ LARGE_BATTERY = True
 
 temp_x = 150
 temp_x_shift = -10
+
+info_x = 250
 
 def screen_home():
     global temp_x
