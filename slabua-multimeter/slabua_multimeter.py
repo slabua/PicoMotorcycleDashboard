@@ -171,10 +171,10 @@ def int_y(pin):
     set_in_use(in_use)
     
     if current_screen == 0:
-        if temp_x_shift == 0:
-            temp_id = (temp_id + 1) % (1 + onewire_sensors)
-        else:
+        if onewire_sensors == 0:
             SPLIT_BARS = not SPLIT_BARS
+        else:
+            temp_id = (temp_id + 1) % (1 + onewire_sensors)
     
     if current_screen == 1:
         LARGE_BATTERY = not LARGE_BATTERY
