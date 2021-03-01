@@ -299,6 +299,9 @@ def screen_home():
     
     # Temperature
     # TODO this part needs a lot of refactoring
+    if not onewire_sensors:
+        temp_x_shift = 0
+    
     if temp_x_shift == 0:
         if temp_id == 0:
             # the following two lines do some maths to convert the number from the temp sensor into celsius
