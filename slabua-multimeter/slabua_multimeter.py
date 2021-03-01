@@ -340,7 +340,11 @@ def screen_home():
         display.text("{:.2f}".format(temperature), temp_x, 75, width, 3)
         display.set_pen(whitePen)
         
-        ds_sensor.convert_temp()
+        try:
+            ds_sensor.convert_temp()
+        except onewire.OneWireError:
+            pass
+        
         #utime.sleep_ms(250)
         for ows in range(onewire_sensors):
             temperature = ds_sensor.read_temp(roms[ows])
