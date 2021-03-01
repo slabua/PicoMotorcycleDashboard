@@ -6,6 +6,7 @@ import onewire, ds18x20
 
 
 timer = machine.Timer()
+start_time = utime.time()
 
 
 # GPIO
@@ -543,7 +544,19 @@ def screen_rpm():
     print(current_screen)
 
 def screen_stats():
-    print(current_screen)
+    #print(current_screen)
+    uptime = utime.time() - start_time
+    print("Uptime: " + str(uptime))
+    
+    display_clear()
+    
+    display.set_pen(whitePen)
+    display.text(SCREENS[current_screen], 10, 8, width, 3)
+    
+    display.set_pen(greenPen)
+    display.text("{:.0f}".format(utime.time()-start_time) + "", 90, 66, width, 9)
+    
+    display.update()
 
 screen_functions = [screen_home, screen_battery, screen_fuel, screen_temperature, screen_rpm, screen_stats]
 
@@ -583,7 +596,7 @@ while True:
         onewire_sensors = len(roms)
         blink_led(0.2, 255, 255, 0)
     
-    if current_screen != 0 and current_screen != 1 and current_screen != 3:
+    if current_screen not in [0, 1, 3, 5]:
         display_clear()
         display.set_pen(whitePen)
         display.text(SCREENS[current_screen], 10, 8, width, 3)
