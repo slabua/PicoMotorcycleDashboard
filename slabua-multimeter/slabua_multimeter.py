@@ -554,7 +554,7 @@ def screen_stats():
     display.text(SCREENS[current_screen], 10, 8, width, 3)
     
     display.set_pen(greenPen)
-    display.text("{:.0f}".format(utime.time()-start_time) + "", 90, 66, width, 9)
+    display.text(str(utime.time() - start_time) + " s", 0, 66, width, 9)
     
     display.update()
 
