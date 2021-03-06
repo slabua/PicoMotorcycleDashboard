@@ -262,6 +262,7 @@ def int_y(pin):
     global temp_id
     global SPLIT_BARS
     global LARGE_BATTERY
+    global start_time
     
     button_y.irq(handler=None)
     
@@ -280,6 +281,9 @@ def int_y(pin):
     elif current_screen == 3:
         display_clear()
         current_x = 0
+
+    elif current_screen == 5:
+        start_time = utime.time()
     
     utime.sleep(BUTTON_DEBOUNCE_TIME)
     button_y.irq(handler=int_y)
