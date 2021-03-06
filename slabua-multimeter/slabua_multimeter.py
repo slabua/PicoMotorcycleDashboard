@@ -143,7 +143,7 @@ def int_x(pin):
     
     if current_screen == 0:
         if temp_x_shift == 0:
-            temp_x_shift = -10
+            temp_x_shift = TEMP_X_SCROLL
             #temp_id = 0
         else:
             temp_x_shift = 0
@@ -226,9 +226,10 @@ RPM_MAX = 12000
 RPM_REDLINE = 10000
 SPLIT_BARS = True
 LARGE_BATTERY = True
+TEMP_X_SCROLL = -10
 
 temp_x = 150
-temp_x_shift = -10
+temp_x_shift = TEMP_X_SCROLL
 
 info_x = 250
 
