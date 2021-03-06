@@ -31,7 +31,7 @@ TEMP_X_SCROLL = -10
 INFO_X = 250
 INFO_X_MIN = -5000
 INFO_X_SCROLL = -10
-INFO_TEXT = "Created by Salvatore La Bua - http://twitter.com/slabua"
+INFO_TEXT = "Salvatore La Bua - http://twitter.com/slabua"
 
 BACKLIGHT_VALUES = [0.25, 0.5, 0.75, 1.0]
 BV = 2
