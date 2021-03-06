@@ -231,6 +231,7 @@ def int_x(pin):
     global current_x
     global temp_x_pos
     global temp_x_shift
+    global BATTERY_ICON_DISCRETE
     
     button_x.irq(handler=None)
     
@@ -244,6 +245,9 @@ def int_x(pin):
             temp_x_shift = 0
             temp_x_pos = TEMP_X
     
+    elif current_screen == 1:
+        BATTERY_ICON_DISCRETE = not BATTERY_ICON_DISCRETE
+
     elif current_screen == 3:
         display_clear()
         current_x = 0
