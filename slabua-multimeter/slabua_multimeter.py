@@ -22,12 +22,18 @@ RPM_MAX = 12000
 RPM_REDLINE = 10000
 SPLIT_BARS = True
 LARGE_BATTERY = True
+
 TEMP_X = 150
 TEMP_X_SCROLL = -10
 INFO_X = 250
 INFO_X_MIN = -5000
 INFO_X_SCROLL = -10
 INFO_TEXT = "Created by Salvatore La Bua - http://twitter.com/slabua"
+
+BACKLIGHT_VALUES = [0.25, 0.5, 0.75, 1.0]
+BV = 2
+
+SCREENS = ["HOME", "BATTERY", "FUEL", "TEMPERATURE", "RPM", "STATS"]  # TODO find a better order and make it dynamic (maybe as dictionary)
 
 
 # Variables initialisation
@@ -41,6 +47,7 @@ temp_x_shift = TEMP_X_SCROLL
 info_x_pos = INFO_X
 
 t = 0
+current_screen = 0
 
 
 # Utility functions
@@ -114,7 +121,7 @@ def display_init(bv):
     display_clear()
     display.update()
 
-display_init(0.75)
+display_init(BACKLIGHT_VALUES[BV])
 
 
 # Buttons
@@ -153,7 +160,7 @@ def int_a(pin):
 def int_b(pin):
     """TODO currently ALL SCREENS Brightness selection, later perhaps Palette selection"""
     global in_use
-    global bv
+    global BV
     global SPLIT_BARS
     global info_x_pos
     
@@ -183,8 +190,8 @@ def int_b(pin):
             
             utime.sleep(0.01)
     
-    bv = (bv + 1) % len(BACKLIGHT_VALUES)
-    display.set_backlight(BACKLIGHT_VALUES[bv])
+    BV = (BV + 1) % len(BACKLIGHT_VALUES)
+    display.set_backlight(BACKLIGHT_VALUES[BV])
     
     utime.sleep(BUTTON_DEBOUNCE_TIME)
     button_b.irq(handler=int_b)
@@ -267,22 +274,7 @@ def in_use_led(in_use):
     else:
         display.set_led(0, 0, 0)
 
-BACKLIGHT_VALUES = [0.25, 0.5, 0.75, 1.0]
-bv = 2
-
-SCREENS = ["HOME", "BATTERY", "FUEL", "TEMPERATURE", "RPM", "STATS"]  # TODO find a better order and make it dynamic (maybe as dictionary)
-current_screen = 0
-
-
-# Screens
-def screen_home():
-    global temp_x_pos
-    global temp_x_shift
-    
-    #print(current_screen)
-    
-    display_clear()
-    
+def draw_home_layout():
     display.set_pen(whitePen)
     display.rectangle(0, 0, width, height)
     
@@ -299,19 +291,11 @@ def screen_home():
     display.rectangle(1, height - 3, 2, 2)
     display.rectangle(width - 3, height - 3, 2, 2)
     
-    display.rectangle(0, int(height / 4), width, 2)
-    display.rectangle(0, int(height / 2), width, 2)
-    display.rectangle(0, int(height / 4 * 3), width, 2)
-    #display.text(SCREENS[current_screen], 10, 8, width, 3)
-    
-    display.text("Fuel", 10, 8, width, 3)
-    display.text("Batt", 10, 41, width, 3)
-    display.text("Temp", 10, 75, width, 3)
-    display.text("RPM", 10, 108, width, 3)
-    
-    display.set_clip(100, 0, 240 - 100 - CLIP_MARGIN, height)
-    
-    # Fuel
+    display.rectangle(0, round(height / 4), width, 2)
+    display.rectangle(0, round(height / 2), width, 2)
+    display.rectangle(0, round(height / 4 * 3), width, 2)
+
+def draw_home_fuel():
     fuel = scale_value(acq_adc(adc1), 0, 100)
     #print(fuel)
     
@@ -327,8 +311,8 @@ def screen_home():
             display.rectangle(r, 5, 2, 25)
     
     display.set_pen(whitePen)
-    
-    # Battery
+
+def draw_home_battery():
     reading = scale_value(acq_adc(adc0), 0, 15)
     
     if reading < 11:  # TODO move to a function with interval and colours, same for other if-else switches
@@ -340,9 +324,12 @@ def screen_home():
     
     display.text("{:.2f}".format(reading), 150, 41, width, 3)
     display.set_pen(whitePen)
-    
-    # Temperature
+
+def draw_home_temperature():
     # TODO this part needs a lot of refactoring
+    global temp_x_pos
+    global temp_x_shift
+    
     if not onewire_sensors:
         temp_x_shift = 0
     
@@ -401,8 +388,8 @@ def screen_home():
             if temperature < 19:
                 display.set_pen(bluePen)
             display.text("{:.2f}".format(temperature), temp_x_pos + (temp_x_offset * (ows + 1)), 75, width, 3)
-    
-    # RPM
+
+def draw_home_rpm():
     rpm = scale_value(acq_adc(adc2), 0, RPM_MAX)
     #print(rpm)
     
@@ -423,7 +410,33 @@ def screen_home():
         display.set_pen(blackPen)
         for r in range(100, width - CLIP_MARGIN, 10):
             display.rectangle(r, 106, 2, 24)
+
+# Screens
+def screen_home():
+    display_clear()
     
+    # Home
+    draw_home_layout()
+    
+    display.text("Fuel", 10, 8, width, 3)
+    display.text("Batt", 10, 41, width, 3)
+    display.text("Temp", 10, 75, width, 3)
+    display.text("RPM", 10, 108, width, 3)
+    
+    display.set_clip(100, 0, 240 - 100 - CLIP_MARGIN, height)
+    
+    # Fuel
+    draw_home_fuel()
+    
+    # Battery
+    draw_home_battery()
+    
+    # Temperature
+    draw_home_temperature()
+
+    # RPM
+    draw_home_rpm()
+
     display.set_pen(whitePen)
     
     display.remove_clip()
