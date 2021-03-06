@@ -22,8 +22,11 @@ RPM_MAX = 12000
 RPM_REDLINE = 10000
 SPLIT_BARS = True
 LARGE_BATTERY = True
+BATTERY_TH = [11, 12]
 
+TEMP_TH = [19, 24]
 TEMP_X = 150
+TEMP_X_OFFSET = 100
 TEMP_X_SCROLL = -10
 INFO_X = 250
 INFO_X_MIN = -5000
@@ -51,21 +54,35 @@ current_screen = 0
 
 
 # Utility functions
+def set_in_use(_):
+    global in_use
+    
+    if in_use:
+        in_use = not in_use
+        timer.deinit()
+        print("timeout")
+
+def in_use_led(in_use):
+    if in_use:
+        display.set_led(64, 0, 0)
+    else:
+        display.set_led(0, 0, 0)
+
+def blink_led(duration, r, g, b):
+    display.set_led(r, g, b)
+    utime.sleep(duration)
+    display.set_led(0, 0, 0)
+
 def acq_adc(adc):
     return adc.read_u16()
-
-def scale_value(value, min_value, max_value):
-    return ((value - 0) / (65535 - 0)) * (max_value - min_value) + min_value
 
 def acq_temp(adc):
     CONVERSION_FACTOR = 3.3 / (65535)
     reading = acq_adc(adc) * CONVERSION_FACTOR
     return 27 - (reading - 0.706) / 0.001721
 
-def blink_led(duration, r, g, b):
-    display.set_led(r, g, b)
-    utime.sleep(duration)
-    display.set_led(0, 0, 0)
+def scale_value(value, min_value, max_value):
+    return ((value - 0) / (65535 - 0)) * (max_value - min_value) + min_value
 
 def ds_scan_roms(ds_sensor, resolution):
     roms = ds_sensor.scan()
@@ -81,6 +98,14 @@ def ds_scan_roms(ds_sensor, resolution):
         ds_sensor.write_scratch(rom, config)
     return roms
 
+def set_temperature_pen(temperature):
+    if temperature < TEMP_TH[0]:
+        display.set_pen(bluePen)
+    elif temperature >= TEMP_TH[0] and temperature < TEMP_TH[1]:
+        display.set_pen(greenPen)
+    else:
+        display.set_pen(redPen)
+
 
 # GPIO
 temp_builtin = machine.ADC(4)
@@ -89,9 +114,9 @@ ds_pin = machine.Pin(11)
 ds_sensor = ds18x20.DS18X20(onewire.OneWire(ds_pin))
 roms = ds_scan_roms(ds_sensor, DS_RESOLUTION)
 
-adc0 = machine.ADC(machine.Pin(26))
-adc1 = machine.ADC(machine.Pin(27))
-adc2 = machine.ADC(machine.Pin(28))
+adc0 = machine.ADC(machine.Pin(26))  # Battery
+adc1 = machine.ADC(machine.Pin(27))  # Fuel
+adc2 = machine.ADC(machine.Pin(28))  # RPM
 
 
 # Pico Display boilerplate
@@ -131,7 +156,6 @@ button_x = machine.Pin(14, machine.Pin.IN, machine.Pin.PULL_UP)
 button_y = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)
 
 def int_a(pin):
-    """Screen selection"""
     global in_use
     global current_screen
     global current_x
@@ -158,7 +182,6 @@ def int_a(pin):
     #machine.enable_irq(state)
 
 def int_b(pin):
-    """TODO currently ALL SCREENS Brightness selection, later perhaps Palette selection"""
     global in_use
     global BV
     global SPLIT_BARS
@@ -197,7 +220,6 @@ def int_b(pin):
     button_b.irq(handler=int_b)
 
 def int_x(pin):
-    """SCREEN 3 Temperature source selection"""
     global in_use
     global temp_id
     global current_x
@@ -225,7 +247,6 @@ def int_x(pin):
     button_x.irq(handler=int_x)
 
 def int_y(pin):
-    """TODO SCREEN 3 Clear view"""
     global in_use
     global current_x
     global temp_id
@@ -260,20 +281,6 @@ button_y.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_y)
 
 
 # Interface
-def set_in_use(_):
-    global in_use
-    
-    if in_use:
-        in_use = not in_use
-        timer.deinit()
-        print("timeout")
-
-def in_use_led(in_use):
-    if in_use:
-        display.set_led(64, 0, 0)
-    else:
-        display.set_led(0, 0, 0)
-
 def draw_home_layout():
     display.set_pen(whitePen)
     display.rectangle(0, 0, width, height)
@@ -296,14 +303,13 @@ def draw_home_layout():
     display.rectangle(0, round(height / 4 * 3), width, 2)
 
 def draw_home_fuel():
-    fuel = scale_value(acq_adc(adc1), 0, 100)
-    #print(fuel)
+    reading = scale_value(acq_adc(adc1), 0, 100)
     
     display.set_pen(255, 196, 0)
-    if fuel < FUEL_RESERVE:
+    if reading < FUEL_RESERVE:
         display.set_pen(redPen)
         display.text("R", width - 25, 8, width, 3)
-    display.rectangle(100, 5, round((width - 100 - CLIP_MARGIN) * fuel / 100), 25)
+    display.rectangle(100, 5, round((width - 100 - CLIP_MARGIN) * reading / 100), 25)
     
     if SPLIT_BARS:
         display.set_pen(blackPen)
@@ -315,9 +321,9 @@ def draw_home_fuel():
 def draw_home_battery():
     reading = scale_value(acq_adc(adc0), 0, 15)
     
-    if reading < 11:  # TODO move to a function with interval and colours, same for other if-else switches
+    if reading < BATTERY_TH[0]:
         display.set_pen(255, 10, 10)
-    elif reading >= 11 and reading < 12:
+    elif reading >= BATTERY_TH[0] and reading < BATTERY_TH[1]:
         display.set_pen(255, 128, 10)
     else:
         display.set_pen(10, 255, 10)
@@ -326,7 +332,6 @@ def draw_home_battery():
     display.set_pen(whitePen)
 
 def draw_home_temperature():
-    # TODO this part needs a lot of refactoring
     global temp_x_pos
     global temp_x_shift
     
@@ -335,41 +340,25 @@ def draw_home_temperature():
     
     if temp_x_shift == 0:
         if temp_id == 0:
-            # the following two lines do some maths to convert the number from the temp sensor into celsius
-            #utime.sleep(0.75)
             temperature = acq_temp(temp_builtin)
         else:
             ds_sensor.convert_temp()
-            #utime.sleep_ms(750)
-            #utime.sleep(1)
             temperature = ds_sensor.read_temp(roms[temp_id - 1])
         
-        display.set_pen(greenPen)
-        
-        if temperature > 24:  # TODO move to a function with interval and colours, same for other if-else switches
-            display.set_pen(redPen)
-        if temperature < 19:
-            display.set_pen(bluePen)
+        set_temperature_pen(temperature)
         
         display.text("T" + str(temp_id) + ":", temp_x_pos - 50, 75, width, 3)
         display.text("{:.2f}".format(temperature), temp_x_pos, 75, width, 3)
         display.set_pen(whitePen)
         
     else:
-        temp_x_offset = 100
+        temp_x_tn = TEMP_X_OFFSET
         temp_x_pos += temp_x_shift
         if temp_x_pos < -150:
             temp_x_pos = 250
-        #reading = temp_builtin.read_u16() * CONVERSION_FACTOR
-        #temperature = 27 - (reading - 0.706) / 0.001721
         temperature = acq_temp(temp_builtin)
         
-        display.set_pen(greenPen)
-        
-        if temperature > 24:  # TODO move to a function with interval and colours, same for other if-else switches
-            display.set_pen(redPen)
-        if temperature < 19:
-            display.set_pen(bluePen)
+        set_temperature_pen(temperature)
         
         display.text("{:.2f}".format(temperature), temp_x_pos, 75, width, 3)
         display.set_pen(whitePen)
@@ -379,32 +368,29 @@ def draw_home_temperature():
         except onewire.OneWireError:
             pass
         
-        #utime.sleep_ms(250)
         for ows in range(onewire_sensors):
             temperature = ds_sensor.read_temp(roms[ows])
-            display.set_pen(greenPen)
-            if temperature > 24:  # TODO move to a function with interval and colours, same for other if-else switches
-                display.set_pen(redPen)
-            if temperature < 19:
-                display.set_pen(bluePen)
-            display.text("{:.2f}".format(temperature), temp_x_pos + (temp_x_offset * (ows + 1)), 75, width, 3)
+            
+            set_temperature_pen(temperature)
+            
+            display.text("{:.2f}".format(temperature), temp_x_pos + (temp_x_tn * (ows + 1)), 75, width, 3)
 
 def draw_home_rpm():
-    rpm = scale_value(acq_adc(adc2), 0, RPM_MAX)
+    reading = scale_value(acq_adc(adc2), 0, RPM_MAX)
     #print(rpm)
     
     at_redline_width = round((width - 100 - CLIP_MARGIN) * RPM_REDLINE / RPM_MAX)
-    rpm_width = round((width - 100 - CLIP_MARGIN) * rpm / RPM_MAX)
+    rpm_width = round((width - 100 - CLIP_MARGIN) * reading / RPM_MAX)
     redline_delta = rpm_width - at_redline_width
     
     display.set_pen(cyanPen)
-    if rpm > RPM_REDLINE:
+    if reading > RPM_REDLINE:
         #display.set_pen(0, 196, 196)
         display.rectangle(100, 106, at_redline_width, 24)
         display.set_pen(redPen)
         display.rectangle(100 + at_redline_width, 106, redline_delta, 24)
     else:
-        display.rectangle(100, 106, round((width - 100) * rpm / RPM_MAX), 24)
+        display.rectangle(100, 106, round((width - 100) * reading / RPM_MAX), 24)
     
     if SPLIT_BARS:
         display.set_pen(blackPen)
