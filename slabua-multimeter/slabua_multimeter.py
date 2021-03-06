@@ -10,12 +10,10 @@ start_time = utime.time()
 
 
 # Parameters
-DS_RESOLUTION = 11
-
-BUTTON_DEBOUNCE_TIME = 0.2
-
+UPDATE_INTERVAL = 0.1
 USE_TIMEOUT = 3
-
+BUTTON_DEBOUNCE_TIME = 0.2
+DS_RESOLUTION = 11
 CLIP_MARGIN = 6
 FUEL_RESERVE = 25
 RPM_MAX = 12000
@@ -501,7 +499,7 @@ def screen_battery():
     display.rectangle(0, 106, 80 - batt_w_diff, 3)
     
     display.update()
-    utime.sleep(0.5)
+    utime.sleep(UPDATE_INTERVAL)
 
 def screen_fuel():
     print(current_screen)
@@ -565,7 +563,7 @@ screen_functions = [screen_home, screen_battery, screen_fuel, screen_temperature
 loading = ['-', '\\', '|', '/']
 
 while True:
-    utime.sleep(0.1)  # 0.5
+    utime.sleep(UPDATE_INTERVAL)
     
     in_use_led(in_use)
     
