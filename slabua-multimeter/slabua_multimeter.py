@@ -357,6 +357,7 @@ def draw_home_temperature():
     else:
         temp_x_tn = TEMP_X_OFFSET
         temp_x_pos += temp_x_shift
+        # TODO Refactor these values
         if temp_x_pos < -150:
             temp_x_pos = 250
         temperature = acq_temp(temp_builtin)
@@ -505,78 +506,39 @@ def screen_battery():
 def screen_fuel():
     print(current_screen)
     
-    fuel = acq_adc(adc1)
-    print(fuel)
+    reading = acq_adc(adc1)
+    print(reading)
 
 def screen_temperature():
     global current_x
     
-    #print(current_screen)
-    
     if temp_id == 0:
-        # the following two lines do some maths to convert the number from the temp sensor into celsius
         utime.sleep_ms(round(750 / (2** (12 - DS_RESOLUTION))))
         temperature = acq_temp(temp_builtin)
     else:
         ds_sensor.convert_temp()
         utime.sleep_ms(round(750 / (2** (12 - DS_RESOLUTION))))
-        #utime.sleep(1)
         temperature = ds_sensor.read_temp(roms[temp_id - 1])
-        #for rom in roms:
-        #    print(ds_sensor.read_temp(rom))
-        #time.sleep(0.5)
-        ##if isinstance(temp, float):
-        ##    temp = temp * (9/5) + 32.0
-        ##    print(temp, end=' ')
-        ##    print('Valid temperature')
-    
+        
     if isinstance(temperature, float):
         print("T" + str(temp_id) + ": " + str(temperature))
     else:
         print("Temperature acquisition failed, retrying...")
     
-    # this if statement clears the display once the graph reaches the right hand side of the display
     if current_x >= (width):
         display_clear()
         current_x = 0
-    #if display.is_pressed(display.BUTTON_Y):
-    #    print("Pressed (y)")
-    #    current_x = 0
-    #    display_clear()
     
-    # chooses a pen colour based on the temperature
-    display.set_pen(greenPen)
-    
-    if temperature > 24:  # TODO move to a function with interval and colours, same for other if-else switches
-        display.set_pen(redPen)
-    if temperature < 19:
-        display.set_pen(bluePen)
+    set_temperature_pen(temperature)
         
-    # heck lets also set the LED to match
-    #display.set_led(0, 64, 0)
-    #if temperature > 24:
-    #    display.set_led(64, 0, 0)
-    #if temperature < 21:
-    #    display.set_led(0, 0, 64)
-    
-    # draws the reading as a tall, thin rectangle
     display.rectangle(current_x, height - (int(temperature) * 2), 8, height)
-    
-    # draws a white background for the text
-    #display.set_pen(255, 255, 255)
     display.rectangle(1, 1, width, int(height / 3))
     
-    # writes the reading as text in the white rectangle
     display.set_pen(blackPen)
     display.text("T" + str(temp_id) + ":  " + "{:.1f}".format(temperature) + " c", 8, 6, width, 5)
     
-    # time to update the display
     display.update()
     
-    # waits for 5 seconds
-    #utime.sleep(0.5) 
-    
-    # the next tall thin rectangle needs to be drawn 5 pixels to the right of the last one
     current_x += 10
 
 def screen_rpm():
@@ -606,8 +568,6 @@ while True:
     utime.sleep(0.1)  # 0.5
     
     in_use_led(in_use)
-    
-    #print(SCREENS[current_screen])
     
     roms = ds_scan_roms(ds_sensor, DS_RESOLUTION)
     if len(roms) != onewire_sensors:
