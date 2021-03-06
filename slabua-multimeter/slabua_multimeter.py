@@ -439,33 +439,35 @@ def screen_battery():
     
     display_clear()
     
-    display.set_pen(whitePen)
-    display.text(SCREENS[current_screen], 10, 8, width, 3)
-    
     set_battery_pen(reading)
+    display.rectangle(0, 0, width, round(height / 3))
+    
+    display.set_pen(blackPen)
+    display.text(SCREENS[current_screen], 8, 6, width, 5)
     
     if LARGE_BATTERY:
         batt_w_diff = 0
     else:
         batt_w_diff = 40
     
-    display.rectangle(12, 55, 16, 3)
-    display.rectangle(19, 48, 3, 16)
-    display.rectangle(10, 67, 20, 4)
-    display.rectangle(0, 71, 80 - batt_w_diff, 49)
+    set_battery_pen(reading)
+    display.rectangle(12, 60, 16, 3)
+    display.rectangle(19, 53, 3, 16)
+    display.rectangle(10, 72, 20, 4)
+    display.rectangle(0, 76, 80 - batt_w_diff, 49)
     if LARGE_BATTERY:
-        display.rectangle(52 - batt_w_diff, 55, 16, 3)
-        display.rectangle(50 - batt_w_diff, 67, 20, 4)
+        display.rectangle(52 - batt_w_diff, 60, 16, 3)
+        display.rectangle(50 - batt_w_diff, 72, 20, 4)
     
     display.set_pen(blackPen)
-    display.rectangle(14, 70, 12, 3)
-    display.rectangle(2, 73, 76 - batt_w_diff, 45)
-    display.rectangle(0, 71, 3, 2)
-    display.rectangle(77 - batt_w_diff, 71, 3, 2)
-    display.rectangle(0, 118, 3, 2)
-    display.rectangle(77 - batt_w_diff, 118, 3, 2)
+    display.rectangle(14, 75, 12, 3)
+    display.rectangle(2, 78, 76 - batt_w_diff, 45)
+    display.rectangle(0, 76, 3, 2)
+    display.rectangle(77 - batt_w_diff, 76, 3, 2)
+    display.rectangle(0, 123, 3, 2)
+    display.rectangle(77 - batt_w_diff, 123, 3, 2)
     if LARGE_BATTERY:
-        display.rectangle(54, 70, 12, 3)
+        display.rectangle(54, 75, 12, 3)
     
     set_battery_pen(reading)
     
@@ -473,34 +475,34 @@ def screen_battery():
         if reading < 3:
             pass
         elif reading > 3 and reading < 5:
-            display.rectangle(2, 111, 76 - batt_w_diff, 7)
+            display.rectangle(2, 116, 76 - batt_w_diff, 7)
         elif reading > 5 and reading < 8:
-            display.rectangle(2, 98, 76 - batt_w_diff, 20)
+            display.rectangle(2, 103, 76 - batt_w_diff, 20)
         elif reading > 8 and reading < 11:
-            display.rectangle(2, 85, 76 - batt_w_diff, 33)
+            display.rectangle(2, 90, 76 - batt_w_diff, 33)
         else:
-            display.rectangle(2, 73, 76 - batt_w_diff, 45)
+            display.rectangle(2, 78, 76 - batt_w_diff, 45)
     else:
         if reading > 11:
             batt_level = 11
         else:
             batt_level = reading
-        display.rectangle(2, 73 + round(45 * (11 - batt_level) / 11), 76 - batt_w_diff, 45 - round(45 * (11 - batt_level) / 11))
+        display.rectangle(2, 78 + round(45 * (11 - batt_level) / 11), 76 - batt_w_diff, 45 - round(45 * (11 - batt_level) / 11))
     
-    display.rectangle(1, 72, 3, 2)
-    display.rectangle(76 - batt_w_diff, 72, 3, 2)
-    display.rectangle(1, 117, 3, 2)
-    display.rectangle(76 - batt_w_diff, 117, 3, 2)
+    display.rectangle(1, 77, 3, 2)
+    display.rectangle(76 - batt_w_diff, 77, 3, 2)
+    display.rectangle(1, 122, 3, 2)
+    display.rectangle(76 - batt_w_diff, 122, 3, 2)
     
     if LARGE_BATTERY:
-        display.text("{:.1f}".format(reading) + "", 90, 66, width, 9)
+        display.text("{:.1f}".format(reading) + "", 90, 71, width, 9)
     else:
-        display.text("{:.1f}".format(reading) + "", 60, 54, width, 11)
+        display.text("{:.1f}".format(reading) + "", 60, 59, width, 11)
     
     display.set_pen(blackPen)
-    display.rectangle(0, 82, 80 - batt_w_diff, 3)
-    display.rectangle(0, 94, 80 - batt_w_diff, 3)
-    display.rectangle(0, 106, 80 - batt_w_diff, 3)
+    display.rectangle(0, 87, 80 - batt_w_diff, 3)
+    display.rectangle(0, 99, 80 - batt_w_diff, 3)
+    display.rectangle(0, 111, 80 - batt_w_diff, 3)
     
     display.update()
     utime.sleep(UPDATE_INTERVAL)
