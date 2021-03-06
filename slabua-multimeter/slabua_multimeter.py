@@ -23,7 +23,7 @@ RPM_REDLINE = 10000
 SPLIT_BARS = True
 LARGE_BATTERY = True
 BATTERY_TH = [11, 12]
-
+BATTERY_ICON_DISCRETE = False
 TEMP_TH = [19, 24]
 TEMP_X = 150
 TEMP_X_OFFSET = 100
@@ -98,13 +98,21 @@ def ds_scan_roms(ds_sensor, resolution):
         ds_sensor.write_scratch(rom, config)
     return roms
 
-def set_temperature_pen(temperature):
-    if temperature < TEMP_TH[0]:
+def set_temperature_pen(reading):
+    if reading < TEMP_TH[0]:
         display.set_pen(bluePen)
-    elif temperature >= TEMP_TH[0] and temperature < TEMP_TH[1]:
+    elif reading >= TEMP_TH[0] and reading < TEMP_TH[1]:
         display.set_pen(greenPen)
     else:
         display.set_pen(redPen)
+
+def set_battery_pen(reading):
+    if reading < BATTERY_TH[0]:
+        display.set_pen(255, 10, 10)
+    elif reading >= BATTERY_TH[0] and reading < BATTERY_TH[1]:
+        display.set_pen(255, 128, 10)
+    else:
+        display.set_pen(10, 255, 10)
 
 
 # GPIO
@@ -321,12 +329,7 @@ def draw_home_fuel():
 def draw_home_battery():
     reading = scale_value(acq_adc(adc0), 0, 15)
     
-    if reading < BATTERY_TH[0]:
-        display.set_pen(255, 10, 10)
-    elif reading >= BATTERY_TH[0] and reading < BATTERY_TH[1]:
-        display.set_pen(255, 128, 10)
-    else:
-        display.set_pen(10, 255, 10)
+    set_battery_pen(reading)
     
     display.text("{:.2f}".format(reading), 150, 41, width, 3)
     display.set_pen(whitePen)
@@ -377,7 +380,6 @@ def draw_home_temperature():
 
 def draw_home_rpm():
     reading = scale_value(acq_adc(adc2), 0, RPM_MAX)
-    #print(rpm)
     
     at_redline_width = round((width - 100 - CLIP_MARGIN) * RPM_REDLINE / RPM_MAX)
     rpm_width = round((width - 100 - CLIP_MARGIN) * reading / RPM_MAX)
@@ -385,7 +387,6 @@ def draw_home_rpm():
     
     display.set_pen(cyanPen)
     if reading > RPM_REDLINE:
-        #display.set_pen(0, 196, 196)
         display.rectangle(100, 106, at_redline_width, 24)
         display.set_pen(redPen)
         display.rectangle(100 + at_redline_width, 106, redline_delta, 24)
@@ -428,7 +429,6 @@ def screen_home():
     display.remove_clip()
     
     display.update()
-    #utime.sleep(0.25)
 
 def screen_battery():
     reading = scale_value(acq_adc(adc0), 0, 15)
@@ -439,12 +439,7 @@ def screen_battery():
     display.set_pen(whitePen)
     display.text(SCREENS[current_screen], 10, 8, width, 3)
     
-    if reading < 11:  # TODO move to a function with interval and colours, same for other if-else switches
-        display.set_pen(255, 10, 10)
-    elif reading >= 11 and reading < 12:
-        display.set_pen(255, 128, 10)
-    else:
-        display.set_pen(10, 255, 10)
+    set_battery_pen(reading)
     
     if LARGE_BATTERY:
         batt_w_diff = 0
@@ -469,23 +464,25 @@ def screen_battery():
     if LARGE_BATTERY:
         display.rectangle(54, 70, 12, 3)
     
-    if reading < 11:  # TODO move to a function with interval and colours, same for other if-else switches
-        display.set_pen(255, 10, 10)
-    elif reading >= 11 and reading < 12:
-        display.set_pen(255, 128, 10)
-    else:
-        display.set_pen(10, 255, 10)
+    set_battery_pen(reading)
     
-    if reading < 3:
-        pass
-    elif reading > 3 and reading < 5:
-        display.rectangle(2, 111, 76 - batt_w_diff, 7)
-    elif reading > 5 and reading < 8:
-        display.rectangle(2, 98, 76 - batt_w_diff, 20)
-    elif reading > 8 and reading < 11:
-        display.rectangle(2, 85, 76 - batt_w_diff, 33)
+    if BATTERY_ICON_DISCRETE:
+        if reading < 3:
+            pass
+        elif reading > 3 and reading < 5:
+            display.rectangle(2, 111, 76 - batt_w_diff, 7)
+        elif reading > 5 and reading < 8:
+            display.rectangle(2, 98, 76 - batt_w_diff, 20)
+        elif reading > 8 and reading < 11:
+            display.rectangle(2, 85, 76 - batt_w_diff, 33)
+        else:
+            display.rectangle(2, 73, 76 - batt_w_diff, 45)
     else:
-        display.rectangle(2, 73, 76 - batt_w_diff, 45)
+        if reading > 11:
+            batt_level = 11
+        else:
+            batt_level = reading
+        display.rectangle(2, 73 + round(45 * (11 - batt_level) / 11), 76 - batt_w_diff, 45 - round(45 * (11 - batt_level) / 11))
     
     display.rectangle(1, 72, 3, 2)
     display.rectangle(76 - batt_w_diff, 72, 3, 2)
@@ -586,7 +583,6 @@ def screen_rpm():
     print(current_screen)
 
 def screen_stats():
-    #print(current_screen)
     uptime = utime.time() - start_time
     print("Uptime: " + str(uptime))
     
