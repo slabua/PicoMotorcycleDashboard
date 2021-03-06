@@ -325,8 +325,6 @@ def draw_home_fuel():
         display.set_pen(blackPen)
         for r in range(100, width - CLIP_MARGIN, 34):
             display.rectangle(r, 5, 2, 25)
-    
-    display.set_pen(whitePen)
 
 def draw_home_battery():
     reading = scale_value(acq_adc(adc0), 0, 15)
@@ -334,7 +332,6 @@ def draw_home_battery():
     set_battery_pen(reading)
     
     display.text("{:.2f}".format(reading), 150, 41, width, 3)
-    display.set_pen(whitePen)
 
 def draw_home_temperature():
     global temp_x_pos
@@ -351,11 +348,9 @@ def draw_home_temperature():
             temperature = ds_sensor.read_temp(roms[temp_id - 1])
         
         set_temperature_pen(temperature)
-        
         display.text("T" + str(temp_id) + ":", temp_x_pos - 50, 75, width, 3)
         display.text("{:.2f}".format(temperature), temp_x_pos, 75, width, 3)
-        display.set_pen(whitePen)
-    
+        
     else:
         temp_x_tn = TEMP_X_OFFSET
         temp_x_pos += temp_x_shift
@@ -365,9 +360,7 @@ def draw_home_temperature():
         temperature = acq_temp(temp_builtin)
         
         set_temperature_pen(temperature)
-        
         display.text("{:.2f}".format(temperature), temp_x_pos, 75, width, 3)
-        display.set_pen(whitePen)
         
         try:
             ds_sensor.convert_temp()
@@ -378,7 +371,6 @@ def draw_home_temperature():
             temperature = ds_sensor.read_temp(roms[ows])
             
             set_temperature_pen(temperature)
-            
             display.text("{:.2f}".format(temperature), temp_x_pos + (temp_x_tn * (ows + 1)), 75, width, 3)
 
 def draw_home_rpm():
@@ -427,8 +419,6 @@ def screen_home():
     # RPM
     draw_home_rpm()
 
-    display.set_pen(whitePen)
-    
     display.remove_clip()
     
     display.update()
@@ -470,7 +460,6 @@ def screen_battery():
         display.rectangle(54, 75, 12, 3)
     
     set_battery_pen(reading)
-    
     if BATTERY_ICON_DISCRETE:
         if reading < 3:
             pass
@@ -518,7 +507,6 @@ def screen_fuel():
         display.set_pen(redPen)
         display.text("R", width - 55, 59, width, 11)
     display.rectangle(0, round(height / 3 + 10), round(width * reading / 100), round(height / 3 * 2 - 20))
-    
     display.rectangle(0, 0, width, round(height / 3))
 
     display.set_pen(blackPen)
@@ -552,7 +540,6 @@ def screen_temperature():
         current_x = 0
     
     set_temperature_pen(temperature)
-    
     display.rectangle(0, 0, width, round(height / 3))
     display.rectangle(current_x, height - (round(temperature) * 2), 8, round(temperature) * 2)
     
