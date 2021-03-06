@@ -10,7 +10,6 @@ start_time = utime.time()
 
 
 # Parameters
-CONVERSION_FACTOR = 3.3 / (65535)
 DS_RESOLUTION = 11
 
 BUTTON_DEBOUNCE_TIME = 0.2
@@ -23,7 +22,12 @@ RPM_MAX = 12000
 RPM_REDLINE = 10000
 SPLIT_BARS = True
 LARGE_BATTERY = True
+TEMP_X = 150
 TEMP_X_SCROLL = -10
+INFO_X = 250
+INFO_X_MIN = -5000
+INFO_X_SCROLL = -10
+INFO_TEXT = "Created by Salvatore La Bua - http://twitter.com/slabua"
 
 
 # Variables initialisation
@@ -32,9 +36,9 @@ onewire_sensors = 0
 
 in_use = False
 current_x = 0
-temp_x = 150
+temp_x_pos = TEMP_X
 temp_x_shift = TEMP_X_SCROLL
-info_x = 250
+info_x_pos = INFO_X
 
 t = 0
 
@@ -47,6 +51,7 @@ def scale_value(value, min_value, max_value):
     return ((value - 0) / (65535 - 0)) * (max_value - min_value) + min_value
 
 def acq_temp(adc):
+    CONVERSION_FACTOR = 3.3 / (65535)
     reading = acq_adc(adc) * CONVERSION_FACTOR
     return 27 - (reading - 0.706) / 0.001721
 
@@ -55,16 +60,16 @@ def blink_led(duration, r, g, b):
     utime.sleep(duration)
     display.set_led(0, 0, 0)
 
-def ds_scan_roms(ds_sensor):
+def ds_scan_roms(ds_sensor, resolution):
     roms = ds_sensor.scan()
     for rom in roms:
-        if DS_RESOLUTION == 9:
+        if resolution == 9:
             config = b'\x00\x00\x1f'
-        elif DS_RESOLUTION == 10:
+        elif resolution == 10:
             config = b'\x00\x00\x3f'
-        elif DS_RESOLUTION == 11:
+        elif resolution == 11:
             config = b'\x00\x00\x5f'
-        elif DS_RESOLUTION == 12:
+        elif resolution == 12:
             config = b'\x00\x00\x7f'
         ds_sensor.write_scratch(rom, config)
     return roms
@@ -75,7 +80,7 @@ temp_builtin = machine.ADC(4)
 
 ds_pin = machine.Pin(11)
 ds_sensor = ds18x20.DS18X20(onewire.OneWire(ds_pin))
-roms = ds_scan_roms(ds_sensor)
+roms = ds_scan_roms(ds_sensor, DS_RESOLUTION)
 
 adc0 = machine.ADC(machine.Pin(26))
 adc1 = machine.ADC(machine.Pin(27))
@@ -150,7 +155,7 @@ def int_b(pin):
     global in_use
     global bv
     global SPLIT_BARS
-    global info_x
+    global info_x_pos
     
     button_b.irq(handler=None)
     
@@ -158,21 +163,21 @@ def int_b(pin):
     set_in_use(in_use)
     
     if display.is_pressed(display.BUTTON_Y):
-        info_x = 250
+        info_x_pos = INFO_X
         SPLIT_BARS = not SPLIT_BARS
         
         display.remove_clip()
         display_clear()
         
         while display.is_pressed(display.BUTTON_Y):
-            if info_x < -5000:
-                info_x = 250
+            if info_x_pos < INFO_X_MIN:
+                info_x_pos = INFO_X
             else:
-                info_x -= 10
+                info_x_pos += INFO_X_SCROLL
             
             display_clear()
             display.set_pen(greenPen)
-            display.text("Created by Salvatore La Bua - http://twitter.com/slabua", info_x, 8, 10000, 16)
+            display.text(INFO_TEXT, info_x_pos, 8, 10000, 16)
             
             display.update()
             
@@ -189,7 +194,7 @@ def int_x(pin):
     global in_use
     global temp_id
     global current_x
-    global temp_x
+    global temp_x_pos
     global temp_x_shift
     
     button_x.irq(handler=None)
@@ -200,12 +205,11 @@ def int_x(pin):
     if current_screen == 0:
         if temp_x_shift == 0:
             temp_x_shift = TEMP_X_SCROLL
-            #temp_id = 0
         else:
             temp_x_shift = 0
-            temp_x = 150
+            temp_x_pos = TEMP_X
     
-    if current_screen == 3:
+    elif current_screen == 3:
         display_clear()
         current_x = 0
         temp_id = (temp_id + 1) % (1 + onewire_sensors)
@@ -232,10 +236,10 @@ def int_y(pin):
         else:
             temp_id = (temp_id + 1) % (1 + onewire_sensors)
     
-    if current_screen == 1:
+    elif current_screen == 1:
         LARGE_BATTERY = not LARGE_BATTERY
     
-    if current_screen == 3:
+    elif current_screen == 3:
         display_clear()
         current_x = 0
     
@@ -272,7 +276,7 @@ current_screen = 0
 
 # Screens
 def screen_home():
-    global temp_x
+    global temp_x_pos
     global temp_x_shift
     
     #print(current_screen)
@@ -360,15 +364,15 @@ def screen_home():
         if temperature < 19:
             display.set_pen(bluePen)
         
-        display.text("T" + str(temp_id) + ":", temp_x - 50, 75, width, 3)
-        display.text("{:.2f}".format(temperature), temp_x, 75, width, 3)
+        display.text("T" + str(temp_id) + ":", temp_x_pos - 50, 75, width, 3)
+        display.text("{:.2f}".format(temperature), temp_x_pos, 75, width, 3)
         display.set_pen(whitePen)
         
     else:
         temp_x_offset = 100
-        temp_x += temp_x_shift
-        if temp_x < -150:
-            temp_x = 250
+        temp_x_pos += temp_x_shift
+        if temp_x_pos < -150:
+            temp_x_pos = 250
         #reading = temp_builtin.read_u16() * CONVERSION_FACTOR
         #temperature = 27 - (reading - 0.706) / 0.001721
         temperature = acq_temp(temp_builtin)
@@ -380,7 +384,7 @@ def screen_home():
         if temperature < 19:
             display.set_pen(bluePen)
         
-        display.text("{:.2f}".format(temperature), temp_x, 75, width, 3)
+        display.text("{:.2f}".format(temperature), temp_x_pos, 75, width, 3)
         display.set_pen(whitePen)
         
         try:
@@ -396,7 +400,7 @@ def screen_home():
                 display.set_pen(redPen)
             if temperature < 19:
                 display.set_pen(bluePen)
-            display.text("{:.2f}".format(temperature), temp_x + (temp_x_offset * (ows + 1)), 75, width, 3)
+            display.text("{:.2f}".format(temperature), temp_x_pos + (temp_x_offset * (ows + 1)), 75, width, 3)
     
     # RPM
     rpm = scale_value(acq_adc(adc2), 0, RPM_MAX)
@@ -610,7 +614,7 @@ while True:
     
     #print(SCREENS[current_screen])
     
-    roms = ds_scan_roms(ds_sensor)
+    roms = ds_scan_roms(ds_sensor, DS_RESOLUTION)
     if len(roms) != onewire_sensors:
         print("The number of connected 1-Wire devices has been updated.")
         onewire_sensors = len(roms)
