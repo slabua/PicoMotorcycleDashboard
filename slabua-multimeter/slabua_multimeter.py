@@ -9,26 +9,73 @@ timer = machine.Timer()
 start_time = utime.time()
 
 
-# GPIO
-sensor_temp = machine.ADC(4)
+# Parameters
 CONVERSION_FACTOR = 3.3 / (65535)
-temp_id = 0
+DS_RESOLUTION = 11
 
-DS_RESOLUTION = 10
+BUTTON_DEBOUNCE_TIME = 0.2
+
+USE_TIMEOUT = 3
+
+CLIP_MARGIN = 6
+FUEL_RESERVE = 25
+RPM_MAX = 12000
+RPM_REDLINE = 10000
+SPLIT_BARS = True
+LARGE_BATTERY = True
+TEMP_X_SCROLL = -10
+
+
+# Variables initialisation
+temp_id = 0
 onewire_sensors = 0
+
+in_use = False
+current_x = 0
+temp_x = 150
+temp_x_shift = TEMP_X_SCROLL
+info_x = 250
+
+t = 0
+
+
+# Utility functions
+def acq_adc(adc):
+    return adc.read_u16()
+
+def scale_value(value, min_value, max_value):
+    return ((value - 0) / (65535 - 0)) * (max_value - min_value) + min_value
+
+def acq_temp(adc):
+    reading = acq_adc(adc) * CONVERSION_FACTOR
+    return 27 - (reading - 0.706) / 0.001721
+
+def blink_led(duration, r, g, b):
+    display.set_led(r, g, b)
+    utime.sleep(duration)
+    display.set_led(0, 0, 0)
+
+def ds_scan_roms(ds_sensor):
+    roms = ds_sensor.scan()
+    for rom in roms:
+        if DS_RESOLUTION == 9:
+            config = b'\x00\x00\x1f'
+        elif DS_RESOLUTION == 10:
+            config = b'\x00\x00\x3f'
+        elif DS_RESOLUTION == 11:
+            config = b'\x00\x00\x5f'
+        elif DS_RESOLUTION == 12:
+            config = b'\x00\x00\x7f'
+        ds_sensor.write_scratch(rom, config)
+    return roms
+
+
+# GPIO
+temp_builtin = machine.ADC(4)
+
 ds_pin = machine.Pin(11)
 ds_sensor = ds18x20.DS18X20(onewire.OneWire(ds_pin))
-roms = ds_sensor.scan()
-for rom in roms:
-    if DS_RESOLUTION == 9:
-        config = b'\x00\x00\x1f'
-    elif DS_RESOLUTION == 10:
-        config = b'\x00\x00\x3f'
-    elif DS_RESOLUTION == 11:
-        config = b'\x00\x00\x5f'
-    elif DS_RESOLUTION == 12:
-        config = b'\x00\x00\x7f'
-    ds_sensor.write_scratch(rom, config)
+roms = ds_scan_roms(ds_sensor)
 
 adc0 = machine.ADC(machine.Pin(26))
 adc1 = machine.ADC(machine.Pin(27))
@@ -66,8 +113,6 @@ display_init(0.75)
 
 
 # Buttons
-BUTTON_DEBOUNCE_TIME = 0.2
-
 button_a = machine.Pin(12, machine.Pin.IN, machine.Pin.PULL_UP)
 button_b = machine.Pin(13, machine.Pin.IN, machine.Pin.PULL_UP)
 button_x = machine.Pin(14, machine.Pin.IN, machine.Pin.PULL_UP)
@@ -204,11 +249,6 @@ button_y.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_y)
 
 
 # Interface
-USE_TIMEOUT = 3
-
-in_use = False
-current_x = 0
-
 def set_in_use(_):
     global in_use
     
@@ -231,19 +271,6 @@ current_screen = 0
 
 
 # Screens
-CLIP_MARGIN = 6
-FUEL_RESERVE = 25
-RPM_MAX = 12000
-RPM_REDLINE = 10000
-SPLIT_BARS = True
-LARGE_BATTERY = True
-TEMP_X_SCROLL = -10
-
-temp_x = 150
-temp_x_shift = TEMP_X_SCROLL
-
-info_x = 250
-
 def screen_home():
     global temp_x
     global temp_x_shift
@@ -319,7 +346,7 @@ def screen_home():
         if temp_id == 0:
             # the following two lines do some maths to convert the number from the temp sensor into celsius
             #utime.sleep(0.75)
-            temperature = acq_temp(sensor_temp)
+            temperature = acq_temp(temp_builtin)
         else:
             ds_sensor.convert_temp()
             #utime.sleep_ms(750)
@@ -342,9 +369,9 @@ def screen_home():
         temp_x += temp_x_shift
         if temp_x < -150:
             temp_x = 250
-        #reading = sensor_temp.read_u16() * CONVERSION_FACTOR
+        #reading = temp_builtin.read_u16() * CONVERSION_FACTOR
         #temperature = 27 - (reading - 0.706) / 0.001721
-        temperature = acq_temp(sensor_temp)
+        temperature = acq_temp(temp_builtin)
         
         display.set_pen(greenPen)
         
@@ -489,7 +516,7 @@ def screen_temperature():
     if temp_id == 0:
         # the following two lines do some maths to convert the number from the temp sensor into celsius
         utime.sleep_ms(round(750 / (2** (12 - DS_RESOLUTION))))
-        temperature = acq_temp(sensor_temp)
+        temperature = acq_temp(temp_builtin)
     else:
         ds_sensor.convert_temp()
         utime.sleep_ms(round(750 / (2** (12 - DS_RESOLUTION))))
@@ -573,27 +600,8 @@ def screen_stats():
 screen_functions = [screen_home, screen_battery, screen_fuel, screen_temperature, screen_rpm, screen_stats]
 
 
-# Utility functions
-def acq_adc(adc):
-    return adc.read_u16()
-    #reading = reading / 65535 * 15
-
-def scale_value(value, min_value, max_value):
-    return ((value - 0) / (65535 - 0)) * (max_value - min_value) + min_value
-
-def acq_temp(adc):
-    reading = acq_adc(adc) * CONVERSION_FACTOR
-    return 27 - (reading - 0.706) / 0.001721
-
-def blink_led(duration, r, g, b):
-    display.set_led(r, g, b)
-    utime.sleep(duration)
-    display.set_led(0, 0, 0)
-
-
 # Main
 loading = ['-', '\\', '|', '/']
-t = 0
 
 while True:
     utime.sleep(0.1)  # 0.5
@@ -602,17 +610,7 @@ while True:
     
     #print(SCREENS[current_screen])
     
-    roms = ds_sensor.scan()
-    for rom in roms:
-        if DS_RESOLUTION == 9:
-            config = b'\x00\x00\x1f'
-        elif DS_RESOLUTION == 10:
-            config = b'\x00\x00\x3f'
-        elif DS_RESOLUTION == 11:
-            config = b'\x00\x00\x5f'
-        elif DS_RESOLUTION == 12:
-            config = b'\x00\x00\x7f'
-        ds_sensor.write_scratch(rom, config)
+    roms = ds_scan_roms(ds_sensor)
     if len(roms) != onewire_sensors:
         print("The number of connected 1-Wire devices has been updated.")
         onewire_sensors = len(roms)
