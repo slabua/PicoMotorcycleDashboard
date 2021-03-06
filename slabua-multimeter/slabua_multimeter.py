@@ -508,10 +508,28 @@ def screen_battery():
     utime.sleep(UPDATE_INTERVAL)
 
 def screen_fuel():
-    print(current_screen)
+    reading = scale_value(acq_adc(adc1), 0, 100)
+    print("ADC1: " + str(reading))
+
+    display_clear()
+
+    display.set_pen(255, 196, 0)
+    if reading < FUEL_RESERVE:
+        display.set_pen(redPen)
+        display.text("R", width - 55, 59, width, 11)
+    display.rectangle(0, round(height / 3 + 10), round(width * reading / 100), round(height / 3 * 2 - 20))
     
-    reading = acq_adc(adc1)
-    print(reading)
+    display.rectangle(0, 0, width, round(height / 3))
+
+    display.set_pen(blackPen)
+    display.text(SCREENS[current_screen], 8, 6, width, 5)
+
+    if SPLIT_BARS:
+        for r in range(60, width, 60):
+            display.rectangle(r, round(height / 3 + 10), 3, round(height / 3 * 2 - 20))
+    
+    display.update()
+    utime.sleep(UPDATE_INTERVAL)
 
 def screen_temperature():
     global current_x
@@ -579,7 +597,7 @@ while True:
         onewire_sensors = len(roms)
         blink_led(0.2, 255, 255, 0)
     
-    if current_screen not in [0, 1, 3, 5]:
+    if current_screen not in [0, 1, 2, 3, 5]:
         display_clear()
         display.set_pen(whitePen)
         display.text(SCREENS[current_screen], 10, 8, width, 3)
