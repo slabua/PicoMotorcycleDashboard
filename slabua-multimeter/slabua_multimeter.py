@@ -355,7 +355,7 @@ def draw_home_temperature():
         display.text("T" + str(temp_id) + ":", temp_x_pos - 50, 75, width, 3)
         display.text("{:.2f}".format(temperature), temp_x_pos, 75, width, 3)
         display.set_pen(whitePen)
-        
+    
     else:
         temp_x_tn = TEMP_X_OFFSET
         temp_x_pos += temp_x_shift
@@ -448,7 +448,7 @@ def screen_battery():
         batt_w_diff = 0
     else:
         batt_w_diff = 40
-        
+    
     display.rectangle(12, 55, 16, 3)
     display.rectangle(19, 48, 3, 16)
     display.rectangle(10, 67, 20, 4)
@@ -521,7 +521,7 @@ def screen_temperature():
         ds_sensor.convert_temp()
         utime.sleep_ms(round(750 / (2** (12 - DS_RESOLUTION))))
         temperature = ds_sensor.read_temp(roms[temp_id - 1])
-        
+    
     if isinstance(temperature, float):
         print("T" + str(temp_id) + ": " + str(temperature))
     else:
@@ -532,9 +532,9 @@ def screen_temperature():
         current_x = 0
     
     set_temperature_pen(temperature)
-        
-    display.rectangle(current_x, height - (int(temperature) * 2), 8, height)
-    display.rectangle(1, 1, width, int(height / 3))
+    
+    display.rectangle(0, 0, width, round(height / 3))
+    display.rectangle(current_x, height - (round(temperature) * 2), 8, round(temperature) * 2)
     
     display.set_pen(blackPen)
     display.text("T" + str(temp_id) + ":  " + "{:.1f}".format(temperature) + " c", 8, 6, width, 5)
