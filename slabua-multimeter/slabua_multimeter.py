@@ -14,10 +14,21 @@ sensor_temp = machine.ADC(4)
 CONVERSION_FACTOR = 3.3 / (65535)
 temp_id = 0
 
+DS_RESOLUTION = 10
+onewire_sensors = 0
 ds_pin = machine.Pin(11)
 ds_sensor = ds18x20.DS18X20(onewire.OneWire(ds_pin))
 roms = ds_sensor.scan()
-onewire_sensors = 0
+for rom in roms:
+    if DS_RESOLUTION == 9:
+        config = b'\x00\x00\x1f'
+    elif DS_RESOLUTION == 10:
+        config = b'\x00\x00\x3f'
+    elif DS_RESOLUTION == 11:
+        config = b'\x00\x00\x5f'
+    elif DS_RESOLUTION == 12:
+        config = b'\x00\x00\x7f'
+    ds_sensor.write_scratch(rom, config)
 
 adc0 = machine.ADC(machine.Pin(26))
 adc1 = machine.ADC(machine.Pin(27))
@@ -477,11 +488,11 @@ def screen_temperature():
     
     if temp_id == 0:
         # the following two lines do some maths to convert the number from the temp sensor into celsius
-        utime.sleep(0.75)
+        utime.sleep_ms(round(750 / (2** (12 - DS_RESOLUTION))))
         temperature = acq_temp(sensor_temp)
     else:
         ds_sensor.convert_temp()
-        utime.sleep_ms(750)
+        utime.sleep_ms(round(750 / (2** (12 - DS_RESOLUTION))))
         #utime.sleep(1)
         temperature = ds_sensor.read_temp(roms[temp_id - 1])
         #for rom in roms:
@@ -592,6 +603,16 @@ while True:
     #print(SCREENS[current_screen])
     
     roms = ds_sensor.scan()
+    for rom in roms:
+        if DS_RESOLUTION == 9:
+            config = b'\x00\x00\x1f'
+        elif DS_RESOLUTION == 10:
+            config = b'\x00\x00\x3f'
+        elif DS_RESOLUTION == 11:
+            config = b'\x00\x00\x5f'
+        elif DS_RESOLUTION == 12:
+            config = b'\x00\x00\x7f'
+        ds_sensor.write_scratch(rom, config)
     if len(roms) != onewire_sensors:
         print("The number of connected 1-Wire devices has been updated.")
         onewire_sensors = len(roms)
