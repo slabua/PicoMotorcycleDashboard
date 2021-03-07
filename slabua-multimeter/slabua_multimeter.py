@@ -563,19 +563,20 @@ def screen_temperature():
 def screen_rpm():
     display_clear()
 
-    reading = scale_value(acq_adc(adc2), 0, RPM_MAX)
+    reading = scale_value(acq_adc(adc0), 0, RPM_MAX)
     print(reading)
 
     display.set_pen(whitePen)
-    display.text(SCREENS[current_screen], 10, 30, width, 2)
+    display.text(SCREENS[current_screen], 10, 37, width, 3)
     if reading >= RPM_REDLINE:
         display.set_pen(redPen)
-    display.text("{:.0f}".format(reading), 10, 8, width, 3)
+    display.text("{:.0f}".format(reading), 10, 8, width, 4)
 
     at_redline_width = round(width * RPM_REDLINE / RPM_MAX)
     rpm_width = round(width * reading / RPM_MAX)
     redline_delta = rpm_width - at_redline_width
     
+    """
     display.set_pen(cyanPen)
     if reading > RPM_REDLINE:
         display.rectangle(0, round(height / 3 + 10), at_redline_width, round(height / 3 * 2 - 10))
@@ -583,12 +584,22 @@ def screen_rpm():
         display.rectangle(at_redline_width, round(height / 3 + 10), redline_delta, round(height / 3 * 2 - 10))
     else:
         display.rectangle(0, round(height / 3 + 10), round(width * reading / RPM_MAX), round(height / 3 * 2 - 10))
-    
+    """
+    if reading > RPM_REDLINE:
+        display.set_pen(redPen)
+    else:
+        display.set_pen(cyanPen)
+    display.rectangle(0, round(height / 3 + 10), round(width * reading / RPM_MAX), round(height / 3 * 2 - 10))
+
     if SPLIT_BARS:
         display.set_pen(blackPen)
-        for r in range(0, width, 24):
+        for r in range(0, width, 20):
             display.rectangle(r, round(height / 3 + 10), 3, round(height / 3 * 2 - 10))
     
+    display.set_pen(blackPen)
+    for x in range(0, width):
+        display.rectangle(x, round(height / 3 + 10), 1, round((height / 3 * 2 - 10) - ((height / 3 * 2 - 10) * (x / width))))
+
     display.update()
 
 def screen_stats():
