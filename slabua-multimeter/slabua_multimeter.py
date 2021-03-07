@@ -26,6 +26,7 @@ TEMP_TH = [19, 24]
 TEMP_X = 150
 TEMP_X_OFFSET = 100
 TEMP_X_SCROLL = -10
+TEMP_BAR_OFFSET = 10
 INFO_X = 250
 INFO_X_MIN = -5000
 INFO_X_SCROLL = -10
@@ -41,8 +42,12 @@ SCREENS = ["HOME", "BATTERY", "FUEL", "TEMPERATURE", "RPM", "STATS"]  # TODO fin
 temp_id = 0
 onewire_sensors = 0
 
+t0s = []
+t1s = []
+t2s = []
+temperature_matrix = [t0s, t1s, t2s]
+
 in_use = False
-current_x = 0
 temp_x_pos = TEMP_X
 temp_x_shift = TEMP_X_SCROLL
 info_x_pos = INFO_X
@@ -164,7 +169,6 @@ button_y = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)
 def int_a(pin):
     global in_use
     global current_screen
-    global current_x
     
     button_a.irq(handler=None)
     #state = machine.disable_irq()
@@ -174,8 +178,6 @@ def int_a(pin):
         current_screen = 0
     else:
         current_screen = (current_screen + 1) % len(SCREENS)
-    
-    current_x = 0
     
     in_use = True
     timer.init(freq=(1 / USE_TIMEOUT), mode=machine.Timer.PERIODIC, callback=set_in_use)
@@ -228,7 +230,6 @@ def int_b(pin):
 def int_x(pin):
     global in_use
     global temp_id
-    global current_x
     global temp_x_pos
     global temp_x_shift
     global BATTERY_ICON_DISCRETE
@@ -249,8 +250,6 @@ def int_x(pin):
         BATTERY_ICON_DISCRETE = not BATTERY_ICON_DISCRETE
 
     elif current_screen == 3:
-        display_clear()
-        current_x = 0
         temp_id = (temp_id + 1) % (1 + onewire_sensors)
     
     utime.sleep(BUTTON_DEBOUNCE_TIME)
@@ -258,11 +257,11 @@ def int_x(pin):
 
 def int_y(pin):
     global in_use
-    global current_x
     global temp_id
     global SPLIT_BARS
     global LARGE_BATTERY
     global start_time
+    global temperature_matrix
     
     button_y.irq(handler=None)
     
@@ -279,8 +278,7 @@ def int_y(pin):
         LARGE_BATTERY = not LARGE_BATTERY
     
     elif current_screen == 3:
-        display_clear()
-        current_x = 0
+        temperature_matrix[temp_id] = []
 
     elif current_screen == 5:
         start_time = utime.time()
@@ -524,8 +522,10 @@ def screen_fuel():
     utime.sleep(UPDATE_INTERVAL)
 
 def screen_temperature():
-    global current_x
-    
+    global temperature_matrix
+
+    display_clear()
+
     temperatures = []
     if onewire_sensors:
         ds_sensor.convert_temp()
@@ -534,26 +534,30 @@ def screen_temperature():
     for ows in range(onewire_sensors):
         temperatures.append(ds_sensor.read_temp(roms[ows]))
     
+    for t in range(len(temperatures)):
+        if len(temperature_matrix[t]) >= (width / TEMP_BAR_OFFSET):
+            temperature_matrix[t] = temperature_matrix[t][1::]
+        temperature_matrix[t].append(temperatures[t])
+    
     if isinstance(temperatures[temp_id], float):
         print("T" + str(temp_id) + ": " + str(temperatures[temp_id]))
     else:
         print("Temperature acquisition failed, retrying...")
     
-    if current_x >= (width):
-        display_clear()
-        current_x = 0
-    
     set_temperature_pen(temperatures[temp_id])
     display.rectangle(0, 0, width, round(height / 3))
-    display.rectangle(current_x, height - (round(temperatures[temp_id]) * 2), 8, round(temperatures[temp_id]) * 2)
+    
+    curr_x = 0
+    for t in temperature_matrix[temp_id]:
+        set_temperature_pen(t)
+        display.rectangle(curr_x, height - (round(t) * 2), TEMP_BAR_OFFSET - 2, round(t) * 2)
+        curr_x += TEMP_BAR_OFFSET
     
     display.set_pen(blackPen)
     display.text("T" + str(temp_id) + ":  " + "{:.1f}".format(temperatures[temp_id]) + " c", 8, 6, width, 5)
     
     display.update()
     
-    current_x += 10
-
 def screen_rpm():
     print(current_screen)
 
