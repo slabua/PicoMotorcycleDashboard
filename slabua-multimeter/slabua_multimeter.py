@@ -563,7 +563,18 @@ def screen_temperature():
     display.update()
     
 def screen_rpm():
-    print(current_screen)
+    display_clear()
+
+    reading = scale_value(acq_adc(adc2), 0, RPM_MAX)
+    print(reading)
+
+    display.set_pen(whitePen)
+    display.text(SCREENS[current_screen], 10, 30, width, 2)
+    if reading >= RPM_REDLINE:
+        display.set_pen(redPen)
+    display.text("{:.0f}".format(reading), 10, 8, width, 3)
+
+    display.update()
 
 def screen_stats():
     display_clear()
@@ -596,7 +607,7 @@ while True:
         onewire_sensors = len(roms)
         blink_led(0.2, 255, 255, 0)
     
-    if current_screen not in [0, 1, 2, 3, 5]:
+    if current_screen not in [0, 1, 2, 3, 4, 5]:
         display_clear()
         display.set_pen(whitePen)
         display.text(SCREENS[current_screen], 10, 8, width, 3)
