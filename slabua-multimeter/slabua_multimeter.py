@@ -563,7 +563,7 @@ def screen_temperature():
 def screen_rpm():
     display_clear()
 
-    reading = scale_value(acq_adc(adc0), 0, RPM_MAX)
+    reading = scale_value(acq_adc(adc2), 0, RPM_MAX)
     print(reading)
 
     display.set_pen(whitePen)
