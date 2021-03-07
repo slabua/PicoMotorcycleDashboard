@@ -511,7 +511,7 @@ def screen_fuel():
     if reading < FUEL_RESERVE:
         display.set_pen(redPen)
         display.text("R", width - 55, 59, width, 11)
-    display.rectangle(0, round(height / 3 + 10), round(width * reading / 100), round(height / 3 * 2 - 20))
+    display.rectangle(0, round(height / 3 + 10), round(width * reading / 100), round(height / 3 * 2 - 10))
     display.rectangle(0, 0, width, round(height / 3))
 
     display.set_pen(blackPen)
@@ -519,7 +519,7 @@ def screen_fuel():
 
     if SPLIT_BARS:
         for r in range(60, width, 60):
-            display.rectangle(r, round(height / 3 + 10), 3, round(height / 3 * 2 - 20))
+            display.rectangle(r, round(height / 3 + 10), 3, round(height / 3 * 2 - 10))
     
     display.update()
 
