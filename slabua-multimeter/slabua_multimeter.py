@@ -338,6 +338,7 @@ def draw_home_battery():
     display.text("{:.2f}".format(reading), 150, 41, width, 3)
 
 def draw_home_temperature():
+    # TODO Refactor logic and some variables/parameters
     global temp_x_pos
     global temp_x_shift
     
@@ -358,7 +359,6 @@ def draw_home_temperature():
     else:
         temp_x_tn = TEMP_X_OFFSET
         temp_x_pos += temp_x_shift
-        # TODO Refactor these values
         if temp_x_pos < -150:
             temp_x_pos = 250
         temperature = acq_temp(temp_builtin)
@@ -526,16 +526,16 @@ def screen_fuel():
 def screen_temperature():
     global current_x
     
-    if temp_id == 0:
-        utime.sleep_ms(round(750 / (2** (12 - DS_RESOLUTION))))
-        temperature = acq_temp(temp_builtin)
-    else:
+    temperatures = []
+    if onewire_sensors:
         ds_sensor.convert_temp()
-        utime.sleep_ms(round(750 / (2** (12 - DS_RESOLUTION))))
-        temperature = ds_sensor.read_temp(roms[temp_id - 1])
+    utime.sleep_ms(round(750 / (2** (12 - DS_RESOLUTION))))
+    temperatures.append(acq_temp(temp_builtin))
+    for ows in range(onewire_sensors):
+        temperatures.append(ds_sensor.read_temp(roms[ows]))
     
-    if isinstance(temperature, float):
-        print("T" + str(temp_id) + ": " + str(temperature))
+    if isinstance(temperatures[temp_id], float):
+        print("T" + str(temp_id) + ": " + str(temperatures[temp_id]))
     else:
         print("Temperature acquisition failed, retrying...")
     
@@ -543,12 +543,12 @@ def screen_temperature():
         display_clear()
         current_x = 0
     
-    set_temperature_pen(temperature)
+    set_temperature_pen(temperatures[temp_id])
     display.rectangle(0, 0, width, round(height / 3))
-    display.rectangle(current_x, height - (round(temperature) * 2), 8, round(temperature) * 2)
+    display.rectangle(current_x, height - (round(temperatures[temp_id]) * 2), 8, round(temperatures[temp_id]) * 2)
     
     display.set_pen(blackPen)
-    display.text("T" + str(temp_id) + ":  " + "{:.1f}".format(temperature) + " c", 8, 6, width, 5)
+    display.text("T" + str(temp_id) + ":  " + "{:.1f}".format(temperatures[temp_id]) + " c", 8, 6, width, 5)
     
     display.update()
     
