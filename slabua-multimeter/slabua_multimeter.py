@@ -11,6 +11,7 @@ start_time = utime.time()
 
 
 # Parameters
+LAYOUT_PEN_ID = 0
 UPDATE_INTERVAL = 0.1
 USE_TIMEOUT = 3
 BUTTON_DEBOUNCE_TIME = 0.25
@@ -193,6 +194,7 @@ def int_b(pin):
     global BV
     global SPLIT_BARS
     global info_x_pos
+    global LAYOUT_PEN_ID
     
     button_b.irq(handler=None)
     
@@ -220,8 +222,12 @@ def int_b(pin):
             
             utime.sleep(INFO_SCROLL_DELAY)
     
-    BV = (BV + 1) % len(BACKLIGHT_VALUES)
-    display.set_backlight(BACKLIGHT_VALUES[BV])
+    elif display.is_pressed(display.BUTTON_X):
+        LAYOUT_PEN_ID = (LAYOUT_PEN_ID + 1) % len(pens)
+
+    else:
+        BV = (BV + 1) % len(BACKLIGHT_VALUES)
+        display.set_backlight(BACKLIGHT_VALUES[BV])
     
     utime.sleep(BUTTON_DEBOUNCE_TIME)
     button_b.irq(handler=int_b)
@@ -237,7 +243,7 @@ def int_x(pin):
     
     print("Interrupted (X)")
     set_in_use(in_use)
-    
+
     if current_screen == 0:
         if temp_x_shift == 0:
             temp_x_shift = TEMP_X_SCROLL
@@ -292,8 +298,8 @@ button_y.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_y)
 
 
 # Interface
-def draw_home_layout():
-    display.set_pen(whitePen)
+def draw_home_layout(pen):
+    display.set_pen(pen)
     display.rectangle(0, 0, width, height)
     
     display.set_pen(blackPen)
@@ -303,7 +309,7 @@ def draw_home_layout():
     display.rectangle(0, height - 2, 2, 2)
     display.rectangle(width - 2, height - 2, 2, 2)
     
-    display.set_pen(whitePen)
+    display.set_pen(pen)
     display.rectangle(1, 1, 2, 2)
     display.rectangle(width - 3, 1, 2, 2)
     display.rectangle(1, height - 3, 2, 2)
@@ -397,8 +403,10 @@ def screen_home():
     display_clear()
     
     # Home
-    draw_home_layout()
+    draw_home_layout(pens[LAYOUT_PEN_ID])
     
+    if LAYOUT_PEN_ID == 7:
+        display.set_pen(whitePen)
     display.text("Fuel", 10, 8, width, 3)
     display.text("Batt", 10, 41, width, 3)
     display.text("Temp", 10, 75, width, 3)
