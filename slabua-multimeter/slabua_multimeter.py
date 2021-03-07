@@ -500,7 +500,6 @@ def screen_battery():
     display.rectangle(0, 111, 80 - batt_w_diff, 3)
     
     display.update()
-    utime.sleep(UPDATE_INTERVAL)
 
 def screen_fuel():
     display_clear()
@@ -523,7 +522,6 @@ def screen_fuel():
             display.rectangle(r, round(height / 3 + 10), 3, round(height / 3 * 2 - 20))
     
     display.update()
-    utime.sleep(UPDATE_INTERVAL)
 
 def screen_temperature():
     global temperature_matrix
@@ -618,3 +616,5 @@ while True:
         t = (t + 1) % len(loading)
     
     screen_functions[current_screen]()
+
+    utime.sleep(UPDATE_INTERVAL)
