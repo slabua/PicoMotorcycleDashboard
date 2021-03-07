@@ -5,6 +5,7 @@ import utime
 import onewire, ds18x20
 
 
+# Timer
 timer = machine.Timer()
 start_time = utime.time()
 
@@ -30,6 +31,7 @@ TEMP_BAR_OFFSET = 10
 INFO_X = 250
 INFO_X_MIN = -5000
 INFO_X_SCROLL = -10
+INFO_SCROLL_DELAY = 0.01
 INFO_TEXT = "Salvatore La Bua - http://twitter.com/slabua"
 
 BACKLIGHT_VALUES = [0.25, 0.5, 0.75, 1.0]
@@ -42,10 +44,7 @@ SCREENS = ["HOME", "BATTERY", "FUEL", "TEMPERATURE", "RPM", "STATS"]  # TODO fin
 temp_id = 0
 onewire_sensors = 0
 
-t0s = []
-t1s = []
-t2s = []
-temperature_matrix = [t0s, t1s, t2s]
+temperature_matrix = [[], [], []]  # TODO make this variable dynamic according to the number of sensors connected
 
 in_use = False
 temp_x_pos = TEMP_X
@@ -63,7 +62,7 @@ def set_in_use(_):
     if in_use:
         in_use = not in_use
         timer.deinit()
-        print("timeout")
+        print("use timeout")
 
 def in_use_led(in_use):
     if in_use:
@@ -119,15 +118,15 @@ def set_battery_pen(reading):
 
 
 # GPIO
-temp_builtin = machine.ADC(4)
+temp_builtin = machine.ADC(4)  # Built-in temperature sensor
 
-ds_pin = machine.Pin(11)
+ds_pin = machine.Pin(11)  # 1-Wire temperature sensors
 ds_sensor = ds18x20.DS18X20(onewire.OneWire(ds_pin))
 roms = ds_scan_roms(ds_sensor, DS_RESOLUTION)
 
-adc0 = machine.ADC(machine.Pin(26))  # Battery
-adc1 = machine.ADC(machine.Pin(27))  # Fuel
-adc2 = machine.ADC(machine.Pin(28))  # RPM
+adc0 = machine.ADC(machine.Pin(26))  # Battery adc
+adc1 = machine.ADC(machine.Pin(27))  # Fuel adc
+adc2 = machine.ADC(machine.Pin(28))  # RPM adc
 
 
 # Pico Display boilerplate
@@ -146,7 +145,7 @@ magentaPen = display.create_pen(255, 0, 255)
 yellowPen = display.create_pen(255, 255, 0)
 blackPen = display.create_pen(0, 0, 0)
 
-pens = [whitePen, redPen, greenPen, bluePen, cyanPen, magentaPen, yellowPen, blackPen]  # TODO check
+pens = [whitePen, redPen, greenPen, bluePen, cyanPen, magentaPen, yellowPen, blackPen]  # TODO currently unused
 
 def display_clear():
     display.set_pen(blackPen)
@@ -219,7 +218,7 @@ def int_b(pin):
             
             display.update()
             
-            utime.sleep(0.01)
+            utime.sleep(INFO_SCROLL_DELAY)
     
     BV = (BV + 1) % len(BACKLIGHT_VALUES)
     display.set_backlight(BACKLIGHT_VALUES[BV])
@@ -332,11 +331,9 @@ def draw_home_battery():
     reading = scale_value(acq_adc(adc0), 0, 15)
     
     set_battery_pen(reading)
-    
     display.text("{:.2f}".format(reading), 150, 41, width, 3)
 
 def draw_home_temperature():
-    # TODO Refactor logic and some variables/parameters
     global temp_x_pos
     global temp_x_shift
     
@@ -422,14 +419,13 @@ def screen_home():
     draw_home_rpm()
 
     display.remove_clip()
-    
     display.update()
 
 def screen_battery():
+    display_clear()
+    
     reading = scale_value(acq_adc(adc0), 0, 15)
     print("ADC0: " + str(reading))
-    
-    display_clear()
     
     set_battery_pen(reading)
     display.rectangle(0, 0, width, round(height / 3))
@@ -499,10 +495,10 @@ def screen_battery():
     utime.sleep(UPDATE_INTERVAL)
 
 def screen_fuel():
+    display_clear()
+    
     reading = scale_value(acq_adc(adc1), 0, 100)
     print("ADC1: " + str(reading))
-
-    display_clear()
 
     display.set_pen(255, 196, 0)
     if reading < FUEL_RESERVE:
@@ -562,10 +558,10 @@ def screen_rpm():
     print(current_screen)
 
 def screen_stats():
+    display_clear()
+    
     uptime = utime.time() - start_time
     print("Uptime: " + str(uptime))
-    
-    display_clear()
     
     display.set_pen(whitePen)
     display.text(SCREENS[current_screen], 10, 8, width, 3)
