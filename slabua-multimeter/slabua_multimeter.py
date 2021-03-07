@@ -273,7 +273,7 @@ def int_y(pin):
     print("Interrupted (Y)")
     set_in_use(in_use)
     
-    if current_screen == 0:
+    if current_screen in [0, 2, 4]:
         if onewire_sensors == 0 or temp_x_shift != 0:
             SPLIT_BARS = not SPLIT_BARS
         else:
