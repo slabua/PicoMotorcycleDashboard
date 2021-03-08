@@ -3,6 +3,7 @@
 import machine
 import utime
 import onewire, ds18x20
+import math
 
 
 # Timer
@@ -20,6 +21,7 @@ CLIP_MARGIN = 6
 FUEL_RESERVE = 25
 RPM_MAX = 12000
 RPM_REDLINE = 10000
+RPM_LAYOUT_ID = 2
 SPLIT_BARS = True
 LARGE_BATTERY = True
 BATTERY_TH = [11, 12]
@@ -238,6 +240,7 @@ def int_x(pin):
     global temp_x_pos
     global temp_x_shift
     global BATTERY_ICON_DISCRETE
+    global RPM_LAYOUT_ID
     
     button_x.irq(handler=None)
     
@@ -257,6 +260,9 @@ def int_x(pin):
     elif current_screen == 3:
         temp_id = (temp_id + 1) % (1 + onewire_sensors)
     
+    elif current_screen == 4:
+        RPM_LAYOUT_ID = (RPM_LAYOUT_ID + 1) % 4
+
     utime.sleep(BUTTON_DEBOUNCE_TIME)
     button_x.irq(handler=int_x)
 
@@ -591,8 +597,19 @@ def screen_rpm():
             display.rectangle(r, round(height / 3 + 10), 3, round(height / 3 * 2 - 10))
     
     display.set_pen(blackPen)
-    for x in range(0, width):
-        display.rectangle(x, round(height / 3 + 10), 1, round((height / 3 * 2 - 10) - ((height / 3 * 2 - 10) * (x / width))))
+    H = height / 3 * 2 - 10
+    if RPM_LAYOUT_ID == 0:
+        for x in range(0, width):
+            display.rectangle(x, round(height / 3 + 10), 1, round((height / 3 * 2 - 10) - ((height / 3 * 2 - 10) * (x / width))))
+    elif RPM_LAYOUT_ID == 1:
+        for x in range(0, width):
+            display.rectangle(x, round(height / 3 + 10), 1, round((height / 3 * 2 - 10) - ((height / 3 * 2 - 10) * (x / width)) + ((0.01 * x** 2 - x) / 40)))
+    elif RPM_LAYOUT_ID == 2:
+        for x in range(0, width):
+            display.rectangle(x, round(height / 3 + 10), 1, round((height / 3 * 2 - 10) - 0.8*(math.sqrt(2*H**2 *(1 - ((x - (width - 0)*2 - 0)**2 / (width*2 + 0)**2)))) + 0))
+    elif RPM_LAYOUT_ID == 3:
+        for x in range(0, width):
+            display.rectangle(x, round(height / 3 + 10), 1, round((height / 3 * 2 - 10) - (math.sqrt(H**2 *(1 - ((x - width - 0)**2 / (width + 0)**2)))) + 0))
 
     display.set_pen(whitePen)
     display.text(SCREENS[current_screen], 8, 50, width, 3)
