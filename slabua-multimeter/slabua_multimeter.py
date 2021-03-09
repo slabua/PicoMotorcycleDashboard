@@ -261,7 +261,7 @@ def int_x(pin):
         temp_id = (temp_id + 1) % (1 + onewire_sensors)
     
     elif current_screen == 4:
-        RPM_LAYOUT_ID = (RPM_LAYOUT_ID + 1) % 4
+        RPM_LAYOUT_ID = (RPM_LAYOUT_ID + 1) % 5
 
     utime.sleep(BUTTON_DEBOUNCE_TIME)
     button_x.irq(handler=int_x)
@@ -610,6 +610,9 @@ def screen_rpm():
     elif RPM_LAYOUT_ID == 3:
         for x in range(0, width):
             display.rectangle(x, round(height / 3 + 10), 1, round((height / 3 * 2 - 10) - (math.sqrt(H**2 *(1 - ((x - width - 0)**2 / (width + 0)**2)))) + 0))
+    elif RPM_LAYOUT_ID == 4:
+        for x in range(0, 80):
+            display.rectangle(x, round(height / 3 + 10), 1, 20)
 
     display.set_pen(whitePen)
     display.text(SCREENS[current_screen], 8, 50, width, 3)
