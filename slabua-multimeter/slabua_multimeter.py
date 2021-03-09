@@ -593,7 +593,7 @@ def screen_rpm():
 
     if SPLIT_BARS:
         display.set_pen(blackPen)
-        for r in range(0, width, 20):
+        for r in range(20, width, 20):
             display.rectangle(r, round(height / 3 + 10), 3, round(height / 3 * 2 - 10))
     
     display.set_pen(blackPen)
