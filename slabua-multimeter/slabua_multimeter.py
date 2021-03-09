@@ -306,10 +306,12 @@ button_y.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_y)
 # Interface
 def draw_home_layout(pen):
     display.set_pen(pen)
-    display.rectangle(0, 0, width, height)
+    display.rectangle(0, 0, width, 2)
+    display.rectangle(0, 0, 2, height)
+    display.rectangle(0, height - 2, width, 2)
+    display.rectangle(width - 2, 0, 2, height)
     
     display.set_pen(blackPen)
-    display.rectangle(2, 2, width - 4, height - 4)
     display.rectangle(0, 0, 2, 2)
     display.rectangle(width - 2, 0, 2, 2)
     display.rectangle(0, height - 2, 2, 2)
