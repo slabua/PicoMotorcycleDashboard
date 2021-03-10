@@ -1,9 +1,12 @@
 # SLaBua Digital Multi Meter
 
+
 import machine
 import utime
 import onewire, ds18x20
 import math
+import framebuf
+import slabua_multimeter_bgimg as slbmmbg
 
 
 # Timer
@@ -12,6 +15,9 @@ start_time = utime.time()
 
 
 # Parameters
+USE_BG_IMAGE = True
+BG_IMAGE_SLOW_LOADING = True
+BG_IMAGES = ["img0.bmp", "img1.bmp"]
 LAYOUT_PEN_ID = 0
 UPDATE_INTERVAL = 0.1
 USE_TIMEOUT = 3
@@ -138,6 +144,9 @@ width = display.get_width()
 height = display.get_height()
 display_buffer = bytearray(width * height * 2)
 display.init(display_buffer)
+if USE_BG_IMAGE:
+    screen_buffer = framebuf.FrameBuffer(display_buffer, width, height, framebuf.RGB565)
+    background = framebuf.FrameBuffer(bytearray(width * height * 2), width, height, framebuf.RGB565)
 
 whitePen = display.create_pen(255, 255, 255)
 redPen = display.create_pen(255, 0, 0)
@@ -157,6 +166,8 @@ def display_clear():
 def display_init(bv):
     display.set_backlight(bv)
     display_clear()
+    if USE_BG_IMAGE:
+        slbmmbg.load_bg_image(display, height, width, display_buffer, BG_IMAGE_SLOW_LOADING, BG_IMAGES[0])
     display.update()
 
 display_init(BACKLIGHT_VALUES[BV])
@@ -409,6 +420,8 @@ def draw_home_rpm():
 # Screens
 def screen_home():
     display_clear()
+    if USE_BG_IMAGE:
+        screen_buffer.blit(background, 0, 0, 0)
     
     # Home
     draw_home_layout(pens[LAYOUT_PEN_ID])
@@ -643,6 +656,16 @@ screen_functions = [screen_home, screen_battery, screen_fuel, screen_temperature
 
 # Main
 loading = ['-', '\\', '|', '/']
+if USE_BG_IMAGE:
+    background.blit(screen_buffer, 0, 0, 0)
+    display.update()
+    if not BG_IMAGE_SLOW_LOADING:
+        utime.sleep(2)
+    slbmmbg.load_bg_image(display, height, width, display_buffer, BG_IMAGE_SLOW_LOADING, BG_IMAGES[1])
+    background.blit(screen_buffer, 0, 0, 0)
+    display.update()
+    if not BG_IMAGE_SLOW_LOADING:
+        utime.sleep(0.5)
 
 while True:
     utime.sleep(UPDATE_INTERVAL)
