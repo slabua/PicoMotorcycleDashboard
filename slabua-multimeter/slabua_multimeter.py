@@ -561,7 +561,7 @@ def screen_temperature():
     
     for t in range(len(temperatures)):
         if len(temperature_matrix[t]) >= (width / TEMP_BAR_OFFSET):
-            temperature_matrix[t] = temperature_matrix[t][1::]
+            temperature_matrix[t].pop(0)
         temperature_matrix[t].append(temperatures[t])
     
     if isinstance(temperatures[temp_id], float):
