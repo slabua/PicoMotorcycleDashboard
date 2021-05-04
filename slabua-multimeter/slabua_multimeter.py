@@ -6,6 +6,7 @@ import utime
 import onewire, ds18x20
 import math
 import framebuf
+import gc
 import slabua_multimeter_bgimg as slbmmbg
 
 
@@ -142,6 +143,7 @@ adc2 = machine.ADC(machine.Pin(28))  # RPM adc
 import picodisplay as display
 width = display.get_width()
 height = display.get_height()
+gc.collect()
 display_buffer = bytearray(width * height * 2)
 display.init(display_buffer)
 if USE_BG_IMAGE:
