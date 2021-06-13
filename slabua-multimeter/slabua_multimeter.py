@@ -238,7 +238,8 @@ def int_b(pin):
             utime.sleep(INFO_SCROLL_DELAY)
     
     elif display.is_pressed(display.BUTTON_X):
-        LAYOUT_PEN_ID = (LAYOUT_PEN_ID + 1) % len(pens)
+        if current_screen == 0:
+            LAYOUT_PEN_ID = (LAYOUT_PEN_ID + 1) % len(pens)
 
     else:
         BV = (BV + 1) % len(BACKLIGHT_VALUES)
