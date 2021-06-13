@@ -46,7 +46,7 @@ TODO
 ### Battery
 - A: Go to Home screen
 - B: Cycle Brightness presets
-- X: -
+- X: Continuous / Discrete battery representation
 - Y: Cycle Graphics style
 - Y+B: Show Info scroll banner (hold)
 
