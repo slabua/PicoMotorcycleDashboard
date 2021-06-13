@@ -31,12 +31,12 @@ def read_config(CONFIG_FILE):
     with open(CONFIG_FILE, 'r') as config_file:
         config = ujson.load(config_file)
     
-    LAYOUT_PEN_ID = int(config['LAYOUT_PEN_ID'])
-    RPM_LAYOUT_ID = int(config['RPM_LAYOUT_ID'])
-    SPLIT_BARS = bool(config['SPLIT_BARS'])
-    LARGE_BATTERY = bool(config['LARGE_BATTERY'])
-    BATTERY_ICON_DISCRETE = bool(config['BATTERY_ICON_DISCRETE'])
-    BV = int(config['BV'])
+    LAYOUT_PEN_ID = config['LAYOUT_PEN_ID']
+    RPM_LAYOUT_ID = config['RPM_LAYOUT_ID']
+    SPLIT_BARS = config['SPLIT_BARS']
+    LARGE_BATTERY = config['LARGE_BATTERY']
+    BATTERY_ICON_DISCRETE = config['BATTERY_ICON_DISCRETE']
+    BV = config['BV']
 
     return [LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV]
 
