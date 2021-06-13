@@ -19,7 +19,7 @@ start_time = utime.time()
 
 # Parameters
 CONFIG_FILE = "config.json"
-USE_BG_IMAGE = True
+USE_BG_IMAGE = False
 BG_IMAGE_SLOW_LOADING = True
 BG_IMAGES = ["img0.bmp", "img1.bmp"]
 LAYOUT_PEN_ID = 0
