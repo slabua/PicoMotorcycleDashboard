@@ -672,7 +672,7 @@ screen_functions = [screen_home, screen_battery, screen_fuel, screen_temperature
 
 
 # Main
-loading = ['-', '\\', '|', '/']
+spinner = "-\|/"
 if USE_BG_IMAGE:
     background.blit(screen_buffer, 0, 0, 0)
     display.update()
@@ -702,8 +702,8 @@ while True:
         
         display.update()
     else:
-        print(loading[t])
-        t = (t + 1) % len(loading)
+        print(spinner[t])
+        t = (t + 1) % len(spinner)
     
     screen_functions[current_screen]()
 
