@@ -23,8 +23,11 @@
   - Connection for Battery/Fuel/Rpm readings
 
 ## Wiring Diagram
-### Breadboard
-![Breadboard](https://lh3.googleusercontent.com/pw/AM-JKLXL85_Idbb3gWbf9R2kGnM6V2rCgni5Bkqi5iXfEr17kTAaiILxOcSAr_75dyG5yG6MaF1wZdk9zgJaEIjLYNVVo-oQGpdGmY1BgSLjT5BdzeRqhGC0syIUG0vCKQ-imdqL0K-JVeibcEyUr8TJiZcICQ=s800-no)
+### Breadboard - Full diagram
+![Breadboard](https://lh3.googleusercontent.com/pw/AM-JKLXL85_Idbb3gWbf9R2kGnM6V2rCgni5Bkqi5iXfEr17kTAaiILxOcSAr_75dyG5yG6MaF1wZdk9zgJaEIjLYNVVo-oQGpdGmY1BgSLjT5BdzeRqhGC0syIUG0vCKQ-imdqL0K-JVeibcEyUr8TJiZcICQ=w800-no)
+
+### Breadboard - Display mounted directly on the Pico (not shown)
+![Breadboard](https://lh3.googleusercontent.com/pw/AM-JKLX_sg0Hmg3jFs7x9WSD-TkZv6eEYqGlLdR1WQPwdqh9wrSa44Gwb01vT0H2fYF46Ei0qnGkRVJ-I7j99hlEovtrKFMknuVN77bLkxAtrWJn5nB2mB-MRH_pDm0vEN33YbEQ57Y2Vv55990lDFU7xXL9wA=w800-no)
 
 ---
 ## Usage
