@@ -15,10 +15,16 @@
     - 240x135 px IPS display
     - RGB LED
 - Sensors
+  - Built-in temperature sensor
+    - (internal ADC on pin 4)
   - DS18B20 Temperature sensor
+    - (currently up to 3 in parallel)
+- Work in progress
+  - Connection for Battery/Fuel/Rpm readings
 
 ## Wiring Diagram
-TODO
+### Breadboard
+![Breadboard](https://lh3.googleusercontent.com/pw/AM-JKLXL85_Idbb3gWbf9R2kGnM6V2rCgni5Bkqi5iXfEr17kTAaiILxOcSAr_75dyG5yG6MaF1wZdk9zgJaEIjLYNVVo-oQGpdGmY1BgSLjT5BdzeRqhGC0syIUG0vCKQ-imdqL0K-JVeibcEyUr8TJiZcICQ=s800-no)
 
 ---
 ## Usage
