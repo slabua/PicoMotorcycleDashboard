@@ -9,7 +9,7 @@ import framebuf
 import gc
 
 import slabua_multimeter_bgimg as slbmmbg
-import slabua_multimeter_config as slbconfig
+import slabua_multimeter_env as slbenv
 
 
 # Timer
@@ -18,7 +18,7 @@ start_time = utime.time()
 
 
 # Parameters
-CONFIG_FILE = "config.json"
+STATE_FILE = "state.json"
 USE_BG_IMAGE = False
 BG_IMAGE_SLOW_LOADING = True
 BG_IMAGES = ["img0.bmp", "img1.bmp"]
@@ -54,7 +54,7 @@ SCREENS = ["HOME", "BATTERY", "FUEL", "TEMPERATURE", "RPM", "STATS"]  # TODO fin
 
 
 # Variables initialisation
-[LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV] = slbconfig.read_config(CONFIG_FILE)
+[LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV] = slbenv.read_state(STATE_FILE)
 
 temp_id = 0
 onewire_sensors = 0
@@ -248,7 +248,7 @@ def int_b(pin):
         
         elif current_screen == 5:
             # TODO Debouncing might cause the config file overwriting once again after initialisation
-            [LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV] = slbconfig.initialise_config(CONFIG_FILE)
+            [LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV] = slbenv.initialise_state(STATE_FILE)
             blink_led(0.2, 0, 255, 255)
 
     else:
@@ -288,7 +288,7 @@ def int_x(pin):
         RPM_LAYOUT_ID = (RPM_LAYOUT_ID + 1) % 5
 
     elif current_screen == 5:
-        slbconfig.write_config(CONFIG_FILE, LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV)
+        slbenv.write_state(STATE_FILE, LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV)
         blink_led(0.2, 0, 0, 255)
 
     utime.sleep(BUTTON_DEBOUNCE_TIME)
