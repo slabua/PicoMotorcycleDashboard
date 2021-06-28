@@ -94,7 +94,7 @@ def acq_adc(adc):
     return adc.read_u16()
 
 def acq_temp(adc):
-    CONVERSION_FACTOR = 3.3 / (65535)
+    CONVERSION_FACTOR = 3.3 / 65535
     reading = acq_adc(adc) * CONVERSION_FACTOR
     return 27 - (reading - 0.706) / 0.001721
 
