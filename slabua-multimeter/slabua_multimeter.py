@@ -98,8 +98,8 @@ def acq_temp(adc):
     reading = acq_adc(adc) * CONVERSION_FACTOR
     return 27 - (reading - 0.706) / 0.001721
 
-def scale_value(value, min_value, max_value):
-    return ((value - 0) / (65535 - 0)) * (max_value - min_value) + min_value
+def scale_value(value, min_value, max_value, max_range):
+    return ((value - 0) / (max_range - 0)) * (max_value - min_value) + min_value
 
 def ds_scan_roms(ds_sensor, resolution):
     roms = ds_sensor.scan()
@@ -356,7 +356,7 @@ def draw_home_layout(pen):
     display.rectangle(0, round(height / 4 * 3), width, 2)
 
 def draw_home_fuel():
-    reading = scale_value(acq_adc(adc1), 0, 100)
+    reading = scale_value(acq_adc(adc1), 0, 100, 65535)
     
     display.set_pen(255, 196, 0)
     if reading < FUEL_RESERVE:
@@ -370,7 +370,7 @@ def draw_home_fuel():
             display.rectangle(r, 5, 2, 25)
 
 def draw_home_battery():
-    reading = scale_value(acq_adc(adc0), 0, 15)
+    reading = scale_value(acq_adc(adc0), 0, 15, 65535)
     
     set_battery_pen(reading)
     display.text("{:.2f}".format(reading), 150, 41, width, 3)
@@ -415,7 +415,7 @@ def draw_home_temperature():
             display.text("{:.2f}".format(temperature), temp_x_pos + (temp_x_tn * (ows + 1)), 75, width, 3)
 
 def draw_home_rpm():
-    reading = scale_value(acq_adc(adc2), 0, RPM_MAX)
+    reading = scale_value(acq_adc(adc2), 0, RPM_MAX, 65535)
     
     at_redline_width = round((width - 100 - CLIP_MARGIN) * RPM_REDLINE / RPM_MAX)
     rpm_width = round((width - 100 - CLIP_MARGIN) * reading / RPM_MAX)
@@ -470,7 +470,7 @@ def screen_home():
 def screen_battery():
     display_clear()
     
-    reading = scale_value(acq_adc(adc0), 0, 15)
+    reading = scale_value(acq_adc(adc0), 0, 15, 65535)
     print("ADC0: " + str(reading))
     
     set_battery_pen(reading)
@@ -542,7 +542,7 @@ def screen_battery():
 def screen_fuel():
     display_clear()
     
-    reading = scale_value(acq_adc(adc1), 0, 100)
+    reading = scale_value(acq_adc(adc1), 0, 100, 65535)
     print("ADC1: " + str(reading))
 
     display.set_pen(255, 196, 0)
@@ -601,7 +601,7 @@ def screen_temperature():
 def screen_rpm():
     display_clear()
 
-    reading = scale_value(acq_adc(adc2), 0, RPM_MAX)
+    reading = scale_value(acq_adc(adc2), 0, RPM_MAX, 65535)
     print(reading)
 
     """
