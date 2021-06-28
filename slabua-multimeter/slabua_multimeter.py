@@ -19,6 +19,7 @@ start_time = utime.time()
 
 # Parameters
 STATE_FILE = "state.json"
+CONFIG_FILE = "config.json"
 USE_BG_IMAGE = False
 BG_IMAGE_SLOW_LOADING = True
 BG_IMAGES = ["img0.bmp", "img1.bmp"]
@@ -55,6 +56,7 @@ SCREENS = ["HOME", "BATTERY", "FUEL", "TEMPERATURE", "RPM", "STATS"]  # TODO fin
 
 # Variables initialisation
 [LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV] = slbenv.read_state(STATE_FILE)
+[USE_BG_IMAGE, BG_IMAGE_SLOW_LOADING, FUEL_RESERVE, RPM_MAX, RPM_REDLINE, BATTERY_TH, TEMP_TH, INFO_TEXT] = slbenv.read_config(CONFIG_FILE)
 
 temp_id = 0
 onewire_sensors = 0
