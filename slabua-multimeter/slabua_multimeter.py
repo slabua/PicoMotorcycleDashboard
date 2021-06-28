@@ -372,7 +372,7 @@ def draw_home_fuel():
             display.rectangle(r, 5, 2, 25)
 
 def draw_home_battery():
-    reading = scale_value(acq_adc(adc0), 0, 15, 65535)
+    reading = scale_value(acq_adc(adc0), 0, 16, 65535)
     
     set_battery_pen(reading)
     display.text("{:.2f}".format(reading), 150, 41, width, 3)
@@ -472,7 +472,7 @@ def screen_home():
 def screen_battery():
     display_clear()
     
-    reading = scale_value(acq_adc(adc0), 0, 15, 65535)
+    reading = scale_value(acq_adc(adc0), 0, 16, 65535)
     print("ADC0: " + str(reading))
     
     set_battery_pen(reading)
