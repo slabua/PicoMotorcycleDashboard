@@ -141,9 +141,9 @@ ds_pin = machine.Pin(11)  # 1-Wire temperature sensors
 ds_sensor = ds18x20.DS18X20(onewire.OneWire(ds_pin))
 roms = ds_scan_roms(ds_sensor, DS_RESOLUTION)
 
-adc0 = machine.ADC(machine.Pin(26))  # Battery adc
-adc1 = machine.ADC(machine.Pin(27))  # Fuel adc
-adc2 = machine.ADC(machine.Pin(28))  # RPM adc
+adc0 = machine.ADC(machine.Pin(26, machine.Pin.IN))  # Battery adc
+adc1 = machine.ADC(machine.Pin(27, machine.Pin.IN))  # Fuel adc
+adc2 = machine.ADC(machine.Pin(28, machine.Pin.IN))  # RPM adc
 
 
 # Pico Display boilerplate
