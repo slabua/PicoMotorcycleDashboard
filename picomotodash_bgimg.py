@@ -1,5 +1,11 @@
-# SLaBua Digital Multi Meter
+# -*- coding: utf-8 -*-
+"""Pico Motorcycle Dashboard
+"""
+
 # Background utility functions
+
+__author__ = "Salvatore La Bua"
+
 
 def load_bg_image(display, height, width, display_buffer, is_slow, src_img):
     dst_img = src_img[0:-4] + ".img"

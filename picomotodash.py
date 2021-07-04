@@ -1,5 +1,6 @@
-# SLaBua Digital Multi Meter
-
+# -*- coding: utf-8 -*-
+"""Pico Motorcycle Dashboard
+"""
 
 import machine
 import utime
@@ -8,8 +9,16 @@ import math
 import framebuf
 import gc
 
-import slabua_multimeter_bgimg as slbmmbg
-import slabua_multimeter_env as slbenv
+import picomotodash_bgimg as pmdbg
+import picomotodash_env as pmdenv
+
+__author__ = "Salvatore La Bua"
+__copyright__ = "Copyright 2021, Salvatore La Bua"
+__license__ = "GPL"
+__version__ = "0.1.0"
+__maintainer__ = "Salvatore La Bua"
+__email__ = "slabua@gmail.com"
+__status__ = "Development"
 
 
 # Timer
@@ -55,8 +64,8 @@ SCREENS = ["HOME", "BATTERY", "FUEL", "TEMPERATURE", "RPM", "STATS"]  # TODO fin
 
 
 # Variables initialisation
-[LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV] = slbenv.read_state(STATE_FILE)
-[USE_BG_IMAGE, BG_IMAGE_SLOW_LOADING, FUEL_RESERVE, RPM_MAX, RPM_REDLINE, BATTERY_TH, TEMP_TH, INFO_TEXT] = slbenv.read_config(CONFIG_FILE)
+[LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV] = pmdenv.read_state(STATE_FILE)
+[USE_BG_IMAGE, BG_IMAGE_SLOW_LOADING, FUEL_RESERVE, RPM_MAX, RPM_REDLINE, BATTERY_TH, TEMP_TH, INFO_TEXT] = pmdenv.read_config(CONFIG_FILE)
 
 temp_id = 0
 onewire_sensors = 0
@@ -176,7 +185,7 @@ def display_init(bv):
     display.set_backlight(bv)
     display_clear()
     if USE_BG_IMAGE:
-        slbmmbg.load_bg_image(display, height, width, display_buffer, BG_IMAGE_SLOW_LOADING, BG_IMAGES[0])
+        pmdbg.load_bg_image(display, height, width, display_buffer, BG_IMAGE_SLOW_LOADING, BG_IMAGES[0])
     display.update()
 
 display_init(BACKLIGHT_VALUES[BV])
@@ -250,7 +259,7 @@ def int_b(pin):
         
         elif current_screen == 5:
             # TODO Debouncing might cause the config file overwriting once again after initialisation
-            [LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV] = slbenv.initialise_state(STATE_FILE)
+            [LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV] = pmdenv.initialise_state(STATE_FILE)
             blink_led(0.2, 0, 255, 255)
 
     else:
@@ -290,7 +299,7 @@ def int_x(pin):
         RPM_LAYOUT_ID = (RPM_LAYOUT_ID + 1) % 5
 
     elif current_screen == 5:
-        slbenv.write_state(STATE_FILE, LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV)
+        pmdenv.write_state(STATE_FILE, LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV)
         blink_led(0.2, 0, 0, 255)
 
     utime.sleep(BUTTON_DEBOUNCE_TIME)
@@ -680,7 +689,7 @@ if USE_BG_IMAGE:
     display.update()
     if not BG_IMAGE_SLOW_LOADING:
         utime.sleep(2)
-    slbmmbg.load_bg_image(display, height, width, display_buffer, BG_IMAGE_SLOW_LOADING, BG_IMAGES[1])
+    pmdbg.load_bg_image(display, height, width, display_buffer, BG_IMAGE_SLOW_LOADING, BG_IMAGES[1])
     background.blit(screen_buffer, 0, 0, 0)
     display.update()
     if not BG_IMAGE_SLOW_LOADING:

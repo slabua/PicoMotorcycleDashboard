@@ -1,7 +1,12 @@
-# SLaBua Digital Multi Meter
+# -*- coding: utf-8 -*-
+"""Pico Motorcycle Dashboard
+"""
+
 # Config utility functions
 
 import ujson
+
+__author__ = "Salvatore La Bua"
 
 
 def initialise_state(STATE_FILE):
