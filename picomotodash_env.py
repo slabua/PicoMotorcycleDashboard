@@ -29,13 +29,14 @@ def initialise_state(STATE_FILE):
     print("state initialised")
     with open(STATE_FILE, 'w') as state_file:
         ujson.dump(state, state_file)
-    
+
     return [LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV]
-    
+
+
 def read_state(STATE_FILE):
     with open(STATE_FILE, 'r') as state_file:
         state = ujson.load(state_file)
-    
+
     LAYOUT_PEN_ID = state['LAYOUT_PEN_ID']
     RPM_LAYOUT_ID = state['RPM_LAYOUT_ID']
     SPLIT_BARS = state['SPLIT_BARS']
@@ -44,6 +45,7 @@ def read_state(STATE_FILE):
     BV = state['BV']
 
     return [LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV]
+
 
 def write_state(STATE_FILE, LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV):
     state = {
@@ -59,10 +61,11 @@ def write_state(STATE_FILE, LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATT
     with open(STATE_FILE, 'w') as state_file:
         ujson.dump(state, state_file)
 
+
 def read_config(CONFIG_FILE):
     with open(CONFIG_FILE, 'r') as config_file:
         config = ujson.load(config_file)
-    
+
     USE_BG_IMAGE = config['USE_BG_IMAGE']
     BG_IMAGE_SLOW_LOADING = config['BG_IMAGE_SLOW_LOADING']
     FUEL_RESERVE = config['FUEL_RESERVE']
