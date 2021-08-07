@@ -481,9 +481,8 @@ def draw_home_rpm():
         for r in range(100, width - CLIP_MARGIN, 10):
             display.rectangle(r, 106, 2, 24)
 
+
 # Screens
-
-
 def screen_home():
     display_clear()
     if USE_BG_IMAGE:
