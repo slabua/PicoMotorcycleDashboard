@@ -2,22 +2,22 @@
 """Pico Motorcycle Dashboard
 """
 
-import picodisplay as display
-import machine
-import utime
-import onewire
-import ds18x20
-import math
-import framebuf
 import gc
+import math
 
+import ds18x20
+import framebuf
+import machine
+import onewire
+import picodisplay as display
 import picomotodash_bgimg as pmdbg
 import picomotodash_env as pmdenv
+import utime
 
 __author__ = "Salvatore La Bua"
 __copyright__ = "Copyright 2021, Salvatore La Bua"
 __license__ = "GPL"
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __maintainer__ = "Salvatore La Bua"
 __email__ = "slabua@gmail.com"
 __status__ = "Development"
@@ -67,10 +67,24 @@ SCREENS = ["HOME", "BATTERY", "FUEL", "TEMPERATURE", "RPM", "STATS"]
 
 
 # Variables initialisation
-[LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY,
-    BATTERY_ICON_DISCRETE, BV] = pmdenv.read_state(STATE_FILE)
-[USE_BG_IMAGE, BG_IMAGE_SLOW_LOADING, FUEL_RESERVE, RPM_MAX, RPM_REDLINE,
-    BATTERY_TH, TEMP_TH, INFO_TEXT] = pmdenv.read_config(CONFIG_FILE)
+[
+    LAYOUT_PEN_ID,
+    RPM_LAYOUT_ID,
+    SPLIT_BARS,
+    LARGE_BATTERY,
+    BATTERY_ICON_DISCRETE,
+    BV,
+] = pmdenv.read_state(STATE_FILE)
+[
+    USE_BG_IMAGE,
+    BG_IMAGE_SLOW_LOADING,
+    FUEL_RESERVE,
+    RPM_MAX,
+    RPM_REDLINE,
+    BATTERY_TH,
+    TEMP_TH,
+    INFO_TEXT,
+] = pmdenv.read_config(CONFIG_FILE)
 
 temp_id = 0
 onewire_sensors = 0
@@ -128,13 +142,13 @@ def ds_scan_roms(ds_sensor, resolution):
     roms = ds_sensor.scan()
     for rom in roms:
         if resolution == 9:
-            config = b'\x00\x00\x1f'
+            config = b"\x00\x00\x1f"
         elif resolution == 10:
-            config = b'\x00\x00\x3f'
+            config = b"\x00\x00\x3f"
         elif resolution == 11:
-            config = b'\x00\x00\x5f'
+            config = b"\x00\x00\x5f"
         elif resolution == 12:
-            config = b'\x00\x00\x7f'
+            config = b"\x00\x00\x7f"
         ds_sensor.write_scratch(rom, config)
     return roms
 
@@ -177,9 +191,17 @@ display_buffer = bytearray(width * height * 2)
 display.init(display_buffer)
 if USE_BG_IMAGE:
     screen_buffer = framebuf.FrameBuffer(
-        display_buffer, width, height, framebuf.RGB565)
+        display_buffer,
+        width,
+        height,
+        framebuf.RGB565,
+    )
     background = framebuf.FrameBuffer(
-        bytearray(width * height * 2), width, height, framebuf.RGB565)
+        bytearray(width * height * 2),
+        width,
+        height,
+        framebuf.RGB565,
+    )
 
 whitePen = display.create_pen(255, 255, 255)
 redPen = display.create_pen(255, 0, 0)
@@ -190,8 +212,16 @@ magentaPen = display.create_pen(255, 0, 255)
 yellowPen = display.create_pen(255, 255, 0)
 blackPen = display.create_pen(0, 0, 0)
 
-pens = [whitePen, redPen, greenPen, bluePen, cyanPen,
-        magentaPen, yellowPen, blackPen]  # TODO currently unused
+pens = [
+    whitePen,
+    redPen,
+    greenPen,
+    bluePen,
+    cyanPen,
+    magentaPen,
+    yellowPen,
+    blackPen,
+]  # TODO currently unused
 
 
 def display_clear():
@@ -203,8 +233,9 @@ def display_init(bv):
     display.set_backlight(bv)
     display_clear()
     if USE_BG_IMAGE:
-        pmdbg.load_bg_image(display, height, width,
-                            display_buffer, BG_IMAGE_SLOW_LOADING, BG_IMAGES[0])
+        pmdbg.load_bg_image(
+            display, height, width, display_buffer, BG_IMAGE_SLOW_LOADING, BG_IMAGES[0]
+        )
     display.update()
 
 
@@ -232,8 +263,11 @@ def int_a(pin):
         current_screen = (current_screen + 1) % len(SCREENS)
 
     in_use = True
-    timer.init(freq=(1 / USE_TIMEOUT),
-               mode=machine.Timer.PERIODIC, callback=set_in_use)
+    timer.init(
+        freq=(1 / USE_TIMEOUT),
+        mode=machine.Timer.PERIODIC,
+        callback=set_in_use,
+    )
 
     display.remove_clip()
     display_clear()
@@ -281,9 +315,16 @@ def int_b(pin):
             LAYOUT_PEN_ID = (LAYOUT_PEN_ID + 1) % len(pens)
 
         elif current_screen == 5:
-            # TODO Debouncing might cause the config file overwriting once again after initialisation
-            [LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY,
-                BATTERY_ICON_DISCRETE, BV] = pmdenv.initialise_state(STATE_FILE)
+            # TODO Debouncing might cause the config file overwriting
+            # once again after initialisation
+            [
+                LAYOUT_PEN_ID,
+                RPM_LAYOUT_ID,
+                SPLIT_BARS,
+                LARGE_BATTERY,
+                BATTERY_ICON_DISCRETE,
+                BV,
+            ] = pmdenv.initialise_state(STATE_FILE)
             blink_led(0.2, 0, 255, 255)
 
     else:
@@ -324,8 +365,15 @@ def int_x(pin):
         RPM_LAYOUT_ID = (RPM_LAYOUT_ID + 1) % 5
 
     elif current_screen == 5:
-        pmdenv.write_state(STATE_FILE, LAYOUT_PEN_ID, RPM_LAYOUT_ID,
-                           SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV)
+        pmdenv.write_state(
+            STATE_FILE,
+            LAYOUT_PEN_ID,
+            RPM_LAYOUT_ID,
+            SPLIT_BARS,
+            LARGE_BATTERY,
+            BATTERY_ICON_DISCRETE,
+            BV,
+        )
         blink_led(0.2, 0, 0, 255)
 
     utime.sleep(BUTTON_DEBOUNCE_TIME)
@@ -402,8 +450,12 @@ def draw_home_fuel():
     if reading < FUEL_RESERVE:
         display.set_pen(redPen)
         display.text("R", width - 25, 8, width, 3)
-    display.rectangle(100, 5, round(
-        (width - 100 - CLIP_MARGIN) * reading / 100), 25)
+    display.rectangle(
+        100,
+        5,
+        round((width - 100 - CLIP_MARGIN) * reading / 100),
+        25,
+    )
 
     if SPLIT_BARS:
         display.set_pen(blackPen)
@@ -455,15 +507,21 @@ def draw_home_temperature():
             temperature = ds_sensor.read_temp(roms[ows])
 
             set_temperature_pen(temperature)
-            display.text("{:.2f}".format(temperature),
-                         temp_x_pos + (temp_x_tn * (ows + 1)), 75, width, 3)
+            display.text(
+                "{:.2f}".format(temperature),
+                temp_x_pos + (temp_x_tn * (ows + 1)),
+                75,
+                width,
+                3,
+            )
 
 
 def draw_home_rpm():
     reading = scale_value(acq_adc(adc2), 0, RPM_MAX, 65535)
 
     at_redline_width = round(
-        (width - 100 - CLIP_MARGIN) * RPM_REDLINE / RPM_MAX)
+        (width - 100 - CLIP_MARGIN) * RPM_REDLINE / RPM_MAX
+    )
     rpm_width = round((width - 100 - CLIP_MARGIN) * reading / RPM_MAX)
     redline_delta = rpm_width - at_redline_width
 
@@ -473,8 +531,12 @@ def draw_home_rpm():
         display.set_pen(redPen)
         display.rectangle(100 + at_redline_width, 106, redline_delta, 24)
     else:
-        display.rectangle(100, 106, round(
-            (width - 100) * reading / RPM_MAX), 24)
+        display.rectangle(
+            100,
+            106,
+            round((width - 100) * reading / RPM_MAX),
+            24,
+        )
 
     if SPLIT_BARS:
         display.set_pen(blackPen)
@@ -569,8 +631,12 @@ def screen_battery():
             batt_level = 11
         else:
             batt_level = reading
-        display.rectangle(2, 78 + round(45 * (11 - batt_level) / 11),
-                          76 - batt_w_diff, 45 - round(45 * (11 - batt_level) / 11))
+        display.rectangle(
+            2,
+            78 + round(45 * (11 - batt_level) / 11),
+            76 - batt_w_diff,
+            45 - round(45 * (11 - batt_level) / 11),
+        )
 
     display.rectangle(1, 77, 3, 2)
     display.rectangle(76 - batt_w_diff, 77, 3, 2)
@@ -600,8 +666,12 @@ def screen_fuel():
     if reading < FUEL_RESERVE:
         display.set_pen(redPen)
         display.text("R", width - 55, 59, width, 11)
-    display.rectangle(0, round(height / 3 + 10),
-                      round(width * reading / 100), round(height / 3 * 2 - 10))
+    display.rectangle(
+        0,
+        round(height / 3 + 10),
+        round(width * reading / 100),
+        round(height / 3 * 2 - 10),
+    )
     display.rectangle(0, 0, width, round(height / 3))
 
     display.set_pen(blackPen)
@@ -609,8 +679,12 @@ def screen_fuel():
 
     if SPLIT_BARS:
         for r in range(60, width, 60):
-            display.rectangle(r, round(height / 3 + 10), 3,
-                              round(height / 3 * 2 - 10))
+            display.rectangle(
+                r,
+                round(height / 3 + 10),
+                3,
+                round(height / 3 * 2 - 10),
+            )
 
     display.update()
 
@@ -644,13 +718,23 @@ def screen_temperature():
     curr_x = 0
     for t in temperature_matrix[temp_id]:
         set_temperature_pen(t)
-        display.rectangle(curr_x, height - (round(t) * 2),
-                          TEMP_BAR_OFFSET - 2, round(t) * 2)
+        display.rectangle(
+            curr_x,
+            height - (round(t) * 2),
+            TEMP_BAR_OFFSET - 2,
+            round(t) * 2,
+        )
         curr_x += TEMP_BAR_OFFSET
 
     display.set_pen(blackPen)
-    display.text("T" + str(temp_id) + ":  " +
-                 "{:.1f}".format(temperatures[temp_id]) + " c", 8, 6, width, 5)
+    display.text(
+        "T" + str(temp_id) + ":  " +
+        "{:.1f}".format(temperatures[temp_id]) + " c",
+        8,
+        6,
+        width,
+        5,
+    )
 
     display.update()
 
@@ -661,50 +745,93 @@ def screen_rpm():
     reading = scale_value(acq_adc(adc2), 0, RPM_MAX, 65535)
     print(reading)
 
-    """
-    at_redline_width = round(width * RPM_REDLINE / RPM_MAX)
-    rpm_width = round(width * reading / RPM_MAX)
-    redline_delta = rpm_width - at_redline_width
+    # at_redline_width = round(width * RPM_REDLINE / RPM_MAX)
+    # rpm_width = round(width * reading / RPM_MAX)
+    # redline_delta = rpm_width - at_redline_width
 
-    display.set_pen(cyanPen)
-    if reading > RPM_REDLINE:
-        display.rectangle(0, round(height / 3 + 10), at_redline_width, round(height / 3 * 2 - 10))
-        display.set_pen(redPen)
-        display.rectangle(at_redline_width, round(height / 3 + 10), redline_delta, round(height / 3 * 2 - 10))
-    else:
-        display.rectangle(0, round(height / 3 + 10), round(width * reading / RPM_MAX), round(height / 3 * 2 - 10))
-    """
+    # display.set_pen(cyanPen)
+    # if reading > RPM_REDLINE:
+    #     display.rectangle(
+    #         0,
+    #         round(height / 3 + 10),
+    #         at_redline_width,
+    #         round(height / 3 * 2 - 10)
+    #     )
+    #     display.set_pen(redPen)
+    #     display.rectangle(
+    #         at_redline_width,
+    #         round(height / 3 + 10),
+    #         redline_delta,
+    #         round(height / 3 * 2 - 10)
+    #     )
+    # else:
+    #     display.rectangle(
+    #         0,
+    #         round(height / 3 + 10),
+    #         round(width * reading / RPM_MAX),
+    #         round(height / 3 * 2 - 10)
+    #     )
+
     if reading > RPM_REDLINE:
         display.set_pen(redPen)
     else:
         display.set_pen(cyanPen)
-    display.rectangle(0, round(height / 3 + 10), round(width *
-                                                       reading / RPM_MAX), round(height / 3 * 2 - 10))
+    display.rectangle(
+        0,
+        round(height / 3 + 10),
+        round(width * reading / RPM_MAX),
+        round(height / 3 * 2 - 10),
+    )
 
     if SPLIT_BARS:
         display.set_pen(blackPen)
         for r in range(20, width, 20):
-            display.rectangle(r, round(height / 3 + 10), 3,
-                              round(height / 3 * 2 - 10))
+            display.rectangle(
+                r,
+                round(height / 3 + 10),
+                3,
+                round(height / 3 * 2 - 10),
+            )
 
     display.set_pen(blackPen)
     H = height / 3 * 2 - 10
     if RPM_LAYOUT_ID == 0:
         for x in range(0, width):
-            display.rectangle(x, round(
-                height / 3 + 10), 1, round((height / 3 * 2 - 10) - ((height / 3 * 2 - 10) * (x / width))))
+            display.rectangle(
+                x,
+                round(height / 3 + 10),
+                1,
+                round((height / 3 * 2 - 10) -
+                      ((height / 3 * 2 - 10) * (x / width))),
+            )
     elif RPM_LAYOUT_ID == 1:
         for x in range(0, width):
-            display.rectangle(x, round(height / 3 + 10), 1, round((height / 3 * 2 - 10) - (
-                (height / 3 * 2 - 10) * (x / width)) + ((0.01 * x ** 2 - x) / 40)))
+            display.rectangle(
+                x,
+                round(height / 3 + 10),
+                1,
+                round((height / 3 * 2 - 10) -
+                      ((height / 3 * 2 - 10) * (x / width)) +
+                      ((0.01 * x ** 2 - x) / 40)),
+            )
     elif RPM_LAYOUT_ID == 2:
         for x in range(0, width):
-            display.rectangle(x, round(height / 3 + 10), 1, round((height / 3 * 2 - 10) - 0.8*(
-                math.sqrt(2*H**2 * (1 - ((x - (width - 0)*2 - 0)**2 / (width*2 + 0)**2)))) + 0))
+            display.rectangle(
+                x,
+                round(height / 3 + 10),
+                1,
+                round((height / 3 * 2 - 10) - 0.8 * (math.sqrt(2 * H**2 *
+                      (1 - ((x - (width - 0) * 2 - 0)**2 / (width * 2 + 0)**2)))) + 0),
+            )
     elif RPM_LAYOUT_ID == 3:
         for x in range(0, width):
-            display.rectangle(x, round(height / 3 + 10), 1, round((height / 3 * 2 - 10) - (
-                math.sqrt(H**2 * (1 - ((x - width - 0)**2 / (width + 0)**2)))) + 0))
+            display.rectangle(
+                x,
+                round(height / 3 + 10),
+                1,
+                round((height / 3 * 2 - 10) - (math.sqrt(H**2 *
+                      (1 - ((x - width - 0)**2 / (width + 0)**2)))) + 0),
+            )
     elif RPM_LAYOUT_ID == 4:
         for x in range(0, 80):
             display.rectangle(x, round(height / 3 + 10), 1, 20)
@@ -733,8 +860,14 @@ def screen_stats():
     display.update()
 
 
-screen_functions = [screen_home, screen_battery,
-                    screen_fuel, screen_temperature, screen_rpm, screen_stats]
+screen_functions = [
+    screen_home,
+    screen_battery,
+    screen_fuel,
+    screen_temperature,
+    screen_rpm,
+    screen_stats,
+]
 
 
 # Main
@@ -744,8 +877,9 @@ if USE_BG_IMAGE:
     display.update()
     if not BG_IMAGE_SLOW_LOADING:
         utime.sleep(2)
-    pmdbg.load_bg_image(display, height, width, display_buffer,
-                        BG_IMAGE_SLOW_LOADING, BG_IMAGES[1])
+    pmdbg.load_bg_image(
+        display, height, width, display_buffer, BG_IMAGE_SLOW_LOADING, BG_IMAGES[1]
+    )
     background.blit(screen_buffer, 0, 0, 0)
     display.update()
     if not BG_IMAGE_SLOW_LOADING:
