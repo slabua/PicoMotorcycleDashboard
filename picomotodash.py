@@ -751,14 +751,26 @@ def screen_rpm():
 
     # display.set_pen(cyanPen)
     # if reading > RPM_REDLINE:
-    #     display.rectangle(0, round(height / 3 + 10),
-    #                       at_redline_width, round(height / 3 * 2 - 10))
+    #     display.rectangle(
+    #         0,
+    #         round(height / 3 + 10),
+    #         at_redline_width,
+    #         round(height / 3 * 2 - 10)
+    #     )
     #     display.set_pen(redPen)
-    #     display.rectangle(at_redline_width, round(
-    #         height / 3 + 10), redline_delta, round(height / 3 * 2 - 10))
+    #     display.rectangle(
+    #         at_redline_width,
+    #         round(height / 3 + 10),
+    #         redline_delta,
+    #         round(height / 3 * 2 - 10)
+    #     )
     # else:
-    #     display.rectangle(0, round(height / 3 + 10), round(width *
-    #                       reading / RPM_MAX), round(height / 3 * 2 - 10))
+    #     display.rectangle(
+    #         0,
+    #         round(height / 3 + 10),
+    #         round(width * reading / RPM_MAX),
+    #         round(height / 3 * 2 - 10)
+    #     )
 
     if reading > RPM_REDLINE:
         display.set_pen(redPen)
