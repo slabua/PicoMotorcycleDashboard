@@ -191,10 +191,16 @@ display_buffer = bytearray(width * height * 2)
 display.init(display_buffer)
 if USE_BG_IMAGE:
     screen_buffer = framebuf.FrameBuffer(
-        display_buffer, width, height, framebuf.RGB565
+        display_buffer,
+        width,
+        height,
+        framebuf.RGB565,
     )
     background = framebuf.FrameBuffer(
-        bytearray(width * height * 2), width, height, framebuf.RGB565
+        bytearray(width * height * 2),
+        width,
+        height,
+        framebuf.RGB565,
     )
 
 whitePen = display.create_pen(255, 255, 255)
@@ -257,8 +263,11 @@ def int_a(pin):
         current_screen = (current_screen + 1) % len(SCREENS)
 
     in_use = True
-    timer.init(freq=(1 / USE_TIMEOUT),
-               mode=machine.Timer.PERIODIC, callback=set_in_use)
+    timer.init(
+        freq=(1 / USE_TIMEOUT),
+        mode=machine.Timer.PERIODIC,
+        callback=set_in_use,
+    )
 
     display.remove_clip()
     display_clear()
@@ -511,7 +520,8 @@ def draw_home_rpm():
     reading = scale_value(acq_adc(adc2), 0, RPM_MAX, 65535)
 
     at_redline_width = round(
-        (width - 100 - CLIP_MARGIN) * RPM_REDLINE / RPM_MAX)
+        (width - 100 - CLIP_MARGIN) * RPM_REDLINE / RPM_MAX
+    )
     rpm_width = round((width - 100 - CLIP_MARGIN) * reading / RPM_MAX)
     redline_delta = rpm_width - at_redline_width
 
