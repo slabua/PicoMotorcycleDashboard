@@ -810,8 +810,9 @@ def screen_rpm():
                 x,
                 round(height / 3 + 10),
                 1,
-                round((height / 3 * 2 - 10) - ((height / 3 * 2 - 10) *
-                      (x / width)) + ((0.01 * x ** 2 - x) / 40)),
+                round((height / 3 * 2 - 10) -
+                      ((height / 3 * 2 - 10) * (x / width)) +
+                      ((0.01 * x ** 2 - x) / 40)),
             )
     elif RPM_LAYOUT_ID == 2:
         for x in range(0, width):
