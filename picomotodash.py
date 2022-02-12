@@ -67,10 +67,24 @@ SCREENS = ["HOME", "BATTERY", "FUEL", "TEMPERATURE", "RPM", "STATS"]
 
 
 # Variables initialisation
-[LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS, LARGE_BATTERY,
-    BATTERY_ICON_DISCRETE, BV] = pmdenv.read_state(STATE_FILE)
-[USE_BG_IMAGE, BG_IMAGE_SLOW_LOADING, FUEL_RESERVE, RPM_MAX, RPM_REDLINE,
-    BATTERY_TH, TEMP_TH, INFO_TEXT] = pmdenv.read_config(CONFIG_FILE)
+[
+    LAYOUT_PEN_ID,
+    RPM_LAYOUT_ID,
+    SPLIT_BARS,
+    LARGE_BATTERY,
+    BATTERY_ICON_DISCRETE,
+    BV,
+] = pmdenv.read_state(STATE_FILE)
+[
+    USE_BG_IMAGE,
+    BG_IMAGE_SLOW_LOADING,
+    FUEL_RESERVE,
+    RPM_MAX,
+    RPM_REDLINE,
+    BATTERY_TH,
+    TEMP_TH,
+    INFO_TEXT,
+] = pmdenv.read_config(CONFIG_FILE)
 
 temp_id = 0
 onewire_sensors = 0
@@ -128,13 +142,13 @@ def ds_scan_roms(ds_sensor, resolution):
     roms = ds_sensor.scan()
     for rom in roms:
         if resolution == 9:
-            config = b'\x00\x00\x1f'
+            config = b"\x00\x00\x1f"
         elif resolution == 10:
-            config = b'\x00\x00\x3f'
+            config = b"\x00\x00\x3f"
         elif resolution == 11:
-            config = b'\x00\x00\x5f'
+            config = b"\x00\x00\x5f"
         elif resolution == 12:
-            config = b'\x00\x00\x7f'
+            config = b"\x00\x00\x7f"
         ds_sensor.write_scratch(rom, config)
     return roms
 
@@ -177,9 +191,11 @@ display_buffer = bytearray(width * height * 2)
 display.init(display_buffer)
 if USE_BG_IMAGE:
     screen_buffer = framebuf.FrameBuffer(
-        display_buffer, width, height, framebuf.RGB565)
+        display_buffer, width, height, framebuf.RGB565
+    )
     background = framebuf.FrameBuffer(
-        bytearray(width * height * 2), width, height, framebuf.RGB565)
+        bytearray(width * height * 2), width, height, framebuf.RGB565
+    )
 
 whitePen = display.create_pen(255, 255, 255)
 redPen = display.create_pen(255, 0, 0)
@@ -190,8 +206,16 @@ magentaPen = display.create_pen(255, 0, 255)
 yellowPen = display.create_pen(255, 255, 0)
 blackPen = display.create_pen(0, 0, 0)
 
-pens = [whitePen, redPen, greenPen, bluePen, cyanPen,
-        magentaPen, yellowPen, blackPen]  # TODO currently unused
+pens = [
+    whitePen,
+    redPen,
+    greenPen,
+    bluePen,
+    cyanPen,
+    magentaPen,
+    yellowPen,
+    blackPen,
+]  # TODO currently unused
 
 
 def display_clear():
@@ -203,8 +227,10 @@ def display_init(bv):
     display.set_backlight(bv)
     display_clear()
     if USE_BG_IMAGE:
-        pmdbg.load_bg_image(display, height, width, display_buffer,
-                            BG_IMAGE_SLOW_LOADING, BG_IMAGES[0])
+        pmdbg.load_bg_image(
+            display, height, width, display_buffer,
+            BG_IMAGE_SLOW_LOADING, BG_IMAGES[0]
+        )
     display.update()
 
 
@@ -284,9 +310,14 @@ def int_b(pin):
         elif current_screen == 5:
             # TODO Debouncing might cause the config file overwriting
             # once again after initialisation
-            [LAYOUT_PEN_ID, RPM_LAYOUT_ID, SPLIT_BARS,
-             LARGE_BATTERY, BATTERY_ICON_DISCRETE,
-             BV] = pmdenv.initialise_state(STATE_FILE)
+            [
+                LAYOUT_PEN_ID,
+                RPM_LAYOUT_ID,
+                SPLIT_BARS,
+                LARGE_BATTERY,
+                BATTERY_ICON_DISCRETE,
+                BV,
+            ] = pmdenv.initialise_state(STATE_FILE)
             blink_led(0.2, 0, 255, 255)
 
     else:
@@ -327,9 +358,15 @@ def int_x(pin):
         RPM_LAYOUT_ID = (RPM_LAYOUT_ID + 1) % 5
 
     elif current_screen == 5:
-        pmdenv.write_state(STATE_FILE, LAYOUT_PEN_ID,
-                           RPM_LAYOUT_ID, SPLIT_BARS,
-                           LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV)
+        pmdenv.write_state(
+            STATE_FILE,
+            LAYOUT_PEN_ID,
+            RPM_LAYOUT_ID,
+            SPLIT_BARS,
+            LARGE_BATTERY,
+            BATTERY_ICON_DISCRETE,
+            BV,
+        )
         blink_led(0.2, 0, 0, 255)
 
     utime.sleep(BUTTON_DEBOUNCE_TIME)
@@ -406,8 +443,8 @@ def draw_home_fuel():
     if reading < FUEL_RESERVE:
         display.set_pen(redPen)
         display.text("R", width - 25, 8, width, 3)
-    display.rectangle(100, 5, round(
-        (width - 100 - CLIP_MARGIN) * reading / 100), 25)
+    display.rectangle(100, 5,
+                      round((width - 100 - CLIP_MARGIN) * reading / 100), 25)
 
     if SPLIT_BARS:
         display.set_pen(blackPen)
