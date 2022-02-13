@@ -23,16 +23,21 @@ def initialise_state(STATE_FILE):
         "SPLIT_BARS": SPLIT_BARS,
         "LARGE_BATTERY": LARGE_BATTERY,
         "BATTERY_ICON_DISCRETE": BATTERY_ICON_DISCRETE,
-        "BV": BV
+        "BV": BV,
     }
 
     print("state initialised")
     with open(STATE_FILE, 'w') as state_file:
         ujson.dump(state, state_file)
 
-    return [LAYOUT_PEN_ID, RPM_LAYOUT_ID,
-            SPLIT_BARS, LARGE_BATTERY,
-            BATTERY_ICON_DISCRETE, BV]
+    return [
+        LAYOUT_PEN_ID,
+        RPM_LAYOUT_ID,
+        SPLIT_BARS,
+        LARGE_BATTERY,
+        BATTERY_ICON_DISCRETE,
+        BV,
+    ]
 
 
 def read_state(STATE_FILE):
@@ -46,20 +51,32 @@ def read_state(STATE_FILE):
     BATTERY_ICON_DISCRETE = state['BATTERY_ICON_DISCRETE']
     BV = state['BV']
 
-    return [LAYOUT_PEN_ID, RPM_LAYOUT_ID,
-            SPLIT_BARS, LARGE_BATTERY,
-            BATTERY_ICON_DISCRETE, BV]
+    return [
+        LAYOUT_PEN_ID,
+        RPM_LAYOUT_ID,
+        SPLIT_BARS,
+        LARGE_BATTERY,
+        BATTERY_ICON_DISCRETE,
+        BV,
+    ]
 
 
-def write_state(STATE_FILE, LAYOUT_PEN_ID, RPM_LAYOUT_ID,
-                SPLIT_BARS, LARGE_BATTERY, BATTERY_ICON_DISCRETE, BV):
+def write_state(
+    STATE_FILE,
+    LAYOUT_PEN_ID,
+    RPM_LAYOUT_ID,
+    SPLIT_BARS,
+    LARGE_BATTERY,
+    BATTERY_ICON_DISCRETE,
+    BV,
+):
     state = {
         "LAYOUT_PEN_ID": LAYOUT_PEN_ID,
         "RPM_LAYOUT_ID": RPM_LAYOUT_ID,
         "SPLIT_BARS": SPLIT_BARS,
         "LARGE_BATTERY": LARGE_BATTERY,
         "BATTERY_ICON_DISCRETE": BATTERY_ICON_DISCRETE,
-        "BV": BV
+        "BV": BV,
     }
 
     print("state updated")
@@ -80,5 +97,13 @@ def read_config(CONFIG_FILE):
     TEMP_TH = config['TEMP_TH']
     INFO_TEXT = config['INFO_TEXT']
 
-    return [USE_BG_IMAGE, BG_IMAGE_SLOW_LOADING, FUEL_RESERVE,
-            RPM_MAX, RPM_REDLINE, BATTERY_TH, TEMP_TH, INFO_TEXT]
+    return [
+        USE_BG_IMAGE,
+        BG_IMAGE_SLOW_LOADING,
+        FUEL_RESERVE,
+        RPM_MAX,
+        RPM_REDLINE,
+        BATTERY_TH,
+        TEMP_TH,
+        INFO_TEXT,
+    ]
