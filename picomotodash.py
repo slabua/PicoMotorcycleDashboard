@@ -904,7 +904,7 @@ while True:
 
         display.update()
     else:
-        print(spinner[t], end='\r')
+        print(spinner[t], end="\r")
         t = (t + 1) % len(spinner)
 
     screen_functions[current_screen]()
