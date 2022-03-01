@@ -108,7 +108,7 @@ def set_in_use(_):
     if in_use:
         in_use = not in_use
         timer.deinit()
-        print("use timeout")
+        print("Timeout released.")
 
 
 def in_use_led(in_use):
