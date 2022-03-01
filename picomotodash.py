@@ -59,8 +59,8 @@ INFO_X_SCROLL = -10
 INFO_SCROLL_DELAY = 0.01
 INFO_TEXT = "Salvatore La Bua - http://twitter.com/slabua"
 
-BACKLIGHT_VALUES = [0.25, 0.5, 0.75, 1.0]
-BV = 2
+BACKLIGHT_VALUES = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+BV = 7
 
 # TODO find a better order and make it dynamic (maybe as dictionary)
 SCREENS = ["HOME", "BATTERY", "FUEL", "TEMPERATURE", "RPM", "STATS"]
@@ -108,7 +108,7 @@ def set_in_use(_):
     if in_use:
         in_use = not in_use
         timer.deinit()
-        print("use timeout")
+        print("Timeout released.")
 
 
 def in_use_led(in_use):
@@ -197,7 +197,7 @@ if USE_BG_IMAGE:
         framebuf.RGB565,
     )
     background = framebuf.FrameBuffer(
-        bytearray(width * height * 2),
+        display_buffer,
         width,
         height,
         framebuf.RGB565,
@@ -743,7 +743,7 @@ def screen_rpm():
     display_clear()
 
     reading = scale_value(acq_adc(adc2), 0, RPM_MAX, 65535)
-    print(reading)
+    print("ADC2: " + str(reading))
 
     # at_redline_width = round(width * RPM_REDLINE / RPM_MAX)
     # rpm_width = round(width * reading / RPM_MAX)
@@ -903,7 +903,7 @@ while True:
 
         display.update()
     else:
-        print(spinner[t], end='\r')
+        print(spinner[t], end="\r")
         t = (t + 1) % len(spinner)
 
     screen_functions[current_screen]()
