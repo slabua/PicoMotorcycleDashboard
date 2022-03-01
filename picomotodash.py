@@ -59,8 +59,8 @@ INFO_X_SCROLL = -10
 INFO_SCROLL_DELAY = 0.01
 INFO_TEXT = "Salvatore La Bua - http://twitter.com/slabua"
 
-BACKLIGHT_VALUES = [0.25, 0.5, 0.75, 1.0]
-BV = 2
+BACKLIGHT_VALUES = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+BV = 7
 
 # TODO find a better order and make it dynamic (maybe as dictionary)
 SCREENS = ["HOME", "BATTERY", "FUEL", "TEMPERATURE", "RPM", "STATS"]
