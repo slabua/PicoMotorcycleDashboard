@@ -855,7 +855,7 @@ def screen_stats():
     display.text(SCREENS[current_screen], 10, 8, width, 3)
 
     display.set_pen(greenPen)
-    display.text(str(uptime) + " s", 0, 70, width, 8)
+    display.text(str(uptime) + " s", 0, 70, width, 6)
 
     display.update()
 
