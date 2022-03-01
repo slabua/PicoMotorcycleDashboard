@@ -197,7 +197,7 @@ if USE_BG_IMAGE:
         framebuf.RGB565,
     )
     background = framebuf.FrameBuffer(
-        bytearray(width * height * 2),
+        display_buffer,
         width,
         height,
         framebuf.RGB565,
