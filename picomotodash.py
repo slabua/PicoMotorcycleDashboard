@@ -743,8 +743,7 @@ def screen_rpm():
     display_clear()
 
     reading = scale_value(acq_adc(adc2), 0, RPM_MAX, 65535)
-    print(reading)
-    # print("ADC2: " + str(reading))
+    print("ADC2: " + str(reading))
 
     # at_redline_width = round(width * RPM_REDLINE / RPM_MAX)
     # rpm_width = round(width * reading / RPM_MAX)
