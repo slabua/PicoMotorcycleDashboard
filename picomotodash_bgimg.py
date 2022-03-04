@@ -8,7 +8,7 @@ __author__ = "Salvatore La Bua"
 
 
 def load_bg_image(display, height, width, display_buffer, is_slow, src_img):
-    dst_img = src_img[0:-4] + ".img"
+    dst_img = src_img.split('.')[0] + ".img"
 
     if is_slow:
         create_bg_image(
@@ -36,7 +36,8 @@ def load_bg_image(display, height, width, display_buffer, is_slow, src_img):
 
 
 def create_bg_image(display, height, width, display_buffer, is_slow, src_img):
-    dst_img = src_img[0:-4] + ".img"
+    dst_img = src_img.split('.')[0] + ".img"
+
     try:
         image_file = open(src_img, 'rb')
         image_file.seek(48)
