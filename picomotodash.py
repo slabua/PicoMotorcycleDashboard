@@ -560,7 +560,7 @@ def screen_home():
     display.text("Temp", 10, 75, width, 3)
     display.text("RPM", 10, 108, width, 3)
 
-    display.set_clip(100, 0, 240 - 100 - CLIP_MARGIN, height)
+    display.set_clip(100, 0, width - 100 - CLIP_MARGIN, height)
 
     # Fuel
     draw_home_fuel()
