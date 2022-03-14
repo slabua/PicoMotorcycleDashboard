@@ -221,7 +221,7 @@ pens = [
     magentaPen,
     yellowPen,
     blackPen,
-]  # TODO currently unused
+]
 
 
 def display_clear():
