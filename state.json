@@ -1,1 +1,8 @@
-{"LAYOUT_PEN_ID": 0, "RPM_LAYOUT_ID": 2, "SPLIT_BARS": true, "LARGE_BATTERY": true, "BATTERY_ICON_DISCRETE": false, "BV": 2}
+{
+    "LAYOUT_PEN_ID": 0,
+    "RPM_LAYOUT_ID": 2,
+    "SPLIT_BARS": true,
+    "LARGE_BATTERY": true,
+    "BATTERY_ICON_DISCRETE": false,
+    "BV": 7
+}

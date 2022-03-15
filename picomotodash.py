@@ -221,7 +221,7 @@ pens = [
     magentaPen,
     yellowPen,
     blackPen,
-]  # TODO currently unused
+]
 
 
 def display_clear():
@@ -560,7 +560,7 @@ def screen_home():
     display.text("Temp", 10, 75, width, 3)
     display.text("RPM", 10, 108, width, 3)
 
-    display.set_clip(100, 0, 240 - 100 - CLIP_MARGIN, height)
+    display.set_clip(100, 0, width - 100 - CLIP_MARGIN, height)
 
     # Fuel
     draw_home_fuel()
@@ -855,7 +855,7 @@ def screen_stats():
     display.text(SCREENS[current_screen], 10, 8, width, 3)
 
     display.set_pen(greenPen)
-    display.text(str(uptime) + " s", 0, 70, width, 8)
+    display.text(str(uptime) + " s", 0, 70, width, 6)
 
     display.update()
 
