@@ -63,7 +63,14 @@ BACKLIGHT_VALUES = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 BV = 7
 
 # TODO find a better order and make it dynamic (maybe as dictionary)
-SCREENS = ["HOME", "BATTERY", "FUEL", "TEMPERATURE", "RPM", "STATS"]
+SCREENS = [
+    "HOME",
+    "BATTERY",
+    "FUEL",
+    "TEMPERATURE",
+    "RPM",
+    "STATS",
+]
 
 
 # Variables initialisation
