@@ -2,11 +2,11 @@
 """Pico Motorcycle Dashboard
 """
 
+__author__ = "Salvatore La Bua"
+
 # Config utility functions
 
 import ujson
-
-__author__ = "Salvatore La Bua"
 
 
 def initialise_state(STATE_FILE):
