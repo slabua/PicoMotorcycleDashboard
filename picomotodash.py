@@ -10,7 +10,7 @@ import framebuf
 import machine
 import onewire
 import picodisplay as display
-import picomotodash_bgimg as pmdbg
+from picomotodash_bgimg import load_bg_image
 import picomotodash_env as pmdenv
 import utime
 
@@ -233,7 +233,7 @@ def display_init(bv):
     display.set_backlight(bv)
     display_clear()
     if USE_BG_IMAGE:
-        pmdbg.load_bg_image(
+        load_bg_image(
             display, height, width, display_buffer, BG_IMAGE_SLOW_LOADING, BG_IMAGES[0]
         )
     display.update()
@@ -877,7 +877,7 @@ if USE_BG_IMAGE:
     display.update()
     if not BG_IMAGE_SLOW_LOADING:
         utime.sleep(2)
-    pmdbg.load_bg_image(
+    load_bg_image(
         display, height, width, display_buffer, BG_IMAGE_SLOW_LOADING, BG_IMAGES[1]
     )
     background.blit(screen_buffer, 0, 0, 0)
