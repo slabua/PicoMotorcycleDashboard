@@ -47,7 +47,7 @@
 - A: Go to next (Battery) screen
   - If pressed again within 3 seconds,  
     cycle through all the screens
-- B: Cycle Brightness presets
+- B: Cycle Brightness presets, frees memory
 - X: Select Multiple or Single Temperature mode
 - Y: If Multiple (*) or Single (**) Temperature mode:
   - Cycle Temperature sources (**)
@@ -58,7 +58,7 @@
 ### Battery
 ![Battery](https://lh3.googleusercontent.com/pw/ACtC-3cRZARVqOj3eLK5HT7IEDH3oCYMBrJzV4IoWjkwxWfUzRoq7lWQxgcGSRjmvslOcRkJf_uW_Sdo6ap8LsXDHEeFBLG9Z9mpcQSjHWTzUqFLHen39trysQos4LUzx7lbxWpI1GizDKkDiM-RH9BDpUiKWg=s360-no)
 - A: Go to Home screen
-- B: Cycle Brightness presets
+- B: Cycle Brightness presets, frees memory
 - X: Continuous / Discrete battery representation
 - Y: Cycle Graphics style
 - Y+B: Show Info scroll banner (hold)
@@ -66,7 +66,7 @@
 ### Fuel
 ![Fuel](https://lh3.googleusercontent.com/pw/ACtC-3d7aUP9n-YRlb5fsQiasavigt714aPAeRD7GU68PknZSBcmQNHQT0gwDpSYR_YjRP1dSf8yflQwINJtYklD0VDCdsSYpglslzOmpUgbf4kJoRtjDThOLJEhuTSJ7TfcW4AJs2xkhtPTBlDIq1NlBzDNAg=s360-no)
 - A: Go to Home screen
-- B: Cycle Brightness presets
+- B: Cycle Brightness presets, frees memory
 - X: -
 - Y: Cycle Bars style (globally)
 - Y+B: Show Info scroll banner (hold)
@@ -82,7 +82,7 @@
 ### RPM
 ![RPM](https://lh3.googleusercontent.com/pw/ACtC-3c_I22cnapZiIY0lHnfPxvrPQy21NtyiYpFDa4_dSBl648UofLTzzr9HfIoObmCWqJxcgv_a8cuPvcN9oUpI8is89dyV_Uw855apra5aaxx1Xd9MiwaeomLO9Rl2M_8R49kOouLLNBiRTrSAAJlZLwvVg=s360-no)
 - A: Go to Home screen
-- B: Cycle Brightness presets
+- B: Cycle Brightness presets, frees memory
 - X: Cycle Ramp style
 - Y: Cycle Bars style (globally)
 - Y+B: Show Info scroll banner (hold)
@@ -90,7 +90,7 @@
 ### Stats
 ![Stats](https://lh3.googleusercontent.com/pw/ACtC-3dVguPgP7rk9ptkmF1MP5YwwX98OmDm8XHYJYvoPkmUOCD0PzqJklYjjDLlXXmitVA3WT6abCaqWDLYhKK0s453_RgzQXyZeOpaOMzo3ucDMo3LDURMm4J5ILmOYr5Vfcd4PZfm2JuK_cuEOY3sB7S9iA=s360-no)
 - A: Go to Home screen
-- B: Cycle Brightness presets
+- B: Cycle Brightness presets, frees memory
 - X: Update Configuration file
 - Y: Reset uptime
 - X+B: Reset Configuration file

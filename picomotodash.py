@@ -5,7 +5,7 @@
 __author__ = "Salvatore La Bua"
 __copyright__ = "Copyright 2021, Salvatore La Bua"
 __license__ = "GPL"
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 __maintainer__ = "Salvatore La Bua"
 __email__ = "slabua@gmail.com"
 __status__ = "Development"
@@ -14,12 +14,11 @@ import gc
 import math
 
 import ds18x20
-import framebuf
 import machine
 import onewire
-import picodisplay as display
-from picomotodash_bgimg import load_bg_image
+from picographics import PicoGraphics, DISPLAY_PICO_DISPLAY, PEN_P4
 import picomotodash_env as pmdenv
+from pimoroni import RGBLED
 import utime
 
 
@@ -32,8 +31,7 @@ start_time = utime.time()
 STATE_FILE = "state.json"
 CONFIG_FILE = "config.json"
 USE_BG_IMAGE = False
-BG_IMAGE_SLOW_LOADING = True
-BG_IMAGES = ["img0.bmp", "img1.bmp"]
+BG_IMAGES = ["img0.jpg", "img1.jpg"]
 LAYOUT_PEN_ID = 0
 UPDATE_INTERVAL = 0.1
 USE_TIMEOUT = 3
@@ -84,7 +82,6 @@ SCREENS = [
 ] = pmdenv.read_state(STATE_FILE)
 [
     USE_BG_IMAGE,
-    BG_IMAGE_SLOW_LOADING,
     FUEL_RESERVE,
     RPM_MAX,
     RPM_REDLINE,
@@ -120,15 +117,15 @@ def set_in_use(_):
 
 def in_use_led(in_use):
     if in_use:
-        display.set_led(64, 0, 0)
+        led.set_rgb(64, 0, 0)
     else:
-        display.set_led(0, 0, 0)
+        led.set_rgb(0, 0, 0)
 
 
 def blink_led(duration, r, g, b):
-    display.set_led(r, g, b)
+    led.set_rgb(r, g, b)
     utime.sleep(duration)
-    display.set_led(0, 0, 0)
+    led.set_rgb(0, 0, 0)
 
 
 def acq_adc(adc):
@@ -171,11 +168,11 @@ def set_temperature_pen(reading):
 
 def set_battery_pen(reading):
     if reading < BATTERY_TH[0]:
-        display.set_pen(255, 10, 10)
+        display.set_pen(customPen255010010)
     elif reading >= BATTERY_TH[0] and reading < BATTERY_TH[1]:
-        display.set_pen(255, 128, 10)
+        display.set_pen(customPen255128010)
     else:
-        display.set_pen(10, 255, 10)
+        display.set_pen(customPen010255010)
 
 
 # GPIO
@@ -191,24 +188,27 @@ adc2 = machine.ADC(machine.Pin(28, machine.Pin.IN))  # RPM adc
 
 
 # Pico Display boilerplate
-width = display.get_width()
-height = display.get_height()
+display = PicoGraphics(display=DISPLAY_PICO_DISPLAY, rotate=0, pen_type=PEN_P4)
+width, height = display.get_bounds()
+led = RGBLED(6, 7, 8)
+
 gc.collect()
-display_buffer = bytearray(width * height * 2)
-display.init(display_buffer)
+
 if USE_BG_IMAGE:
-    screen_buffer = framebuf.FrameBuffer(
-        display_buffer,
-        width,
-        height,
-        framebuf.RGB565,
-    )
-    background = framebuf.FrameBuffer(
-        display_buffer,
-        width,
-        height,
-        framebuf.RGB565,
-    )
+    import jpegdec
+
+    j = jpegdec.JPEG(display)
+    j.open_file(BG_IMAGES[0])
+
+    for y in range(height / 20):
+        j.decode(0, height - (y * 20), jpegdec.JPEG_SCALE_FULL, dither=False)
+        display.update()
+    j.decode(0, 0, jpegdec.JPEG_SCALE_FULL, dither=False)
+
+    display.update()
+    utime.sleep(2)
+    # TODO check
+    # j.open_file(BG_IMAGES[1])
 
 whitePen = display.create_pen(255, 255, 255)
 redPen = display.create_pen(255, 0, 0)
@@ -218,6 +218,10 @@ cyanPen = display.create_pen(0, 255, 255)
 magentaPen = display.create_pen(255, 0, 255)
 yellowPen = display.create_pen(255, 255, 0)
 blackPen = display.create_pen(0, 0, 0)
+customPen255196000 = display.create_pen(255, 196, 0)
+customPen255010010 = display.create_pen(255, 10, 10)
+customPen255128010 = display.create_pen(255, 128, 10)
+customPen010255010 = display.create_pen(10, 255, 10)
 
 pens = [
     whitePen,
@@ -239,10 +243,7 @@ def display_clear():
 def display_init(bv):
     display.set_backlight(bv)
     display_clear()
-    if USE_BG_IMAGE:
-        load_bg_image(
-            display, height, width, display_buffer, BG_IMAGE_SLOW_LOADING, BG_IMAGES[0]
-        )
+
     display.update()
 
 
@@ -296,14 +297,19 @@ def int_b(pin):
     print("Interrupted (B)")
     set_in_use(in_use)
 
-    if display.is_pressed(display.BUTTON_Y):
+    print("Available memory before cleanup: ", gc.mem_free())
+    gc.collect()
+    print("Available memory after cleanup: ", gc.mem_free())
+    gc.collect()
+
+    if not button_y.value():
         info_x_pos = INFO_X
         SPLIT_BARS = not SPLIT_BARS
 
         display.remove_clip()
         display_clear()
 
-        while display.is_pressed(display.BUTTON_Y):
+        while not button_y.value():
             if info_x_pos < INFO_X_MIN:
                 info_x_pos = INFO_X
             else:
@@ -317,7 +323,7 @@ def int_b(pin):
 
             utime.sleep(INFO_SCROLL_DELAY)
 
-    elif display.is_pressed(display.BUTTON_X):
+    if not button_x.value():
         if current_screen == 0:
             LAYOUT_PEN_ID = (LAYOUT_PEN_ID + 1) % len(pens)
 
@@ -453,7 +459,7 @@ def draw_home_layout(pen):
 def draw_home_fuel():
     reading = scale_value(acq_adc(adc1), 0, 100, 65535)
 
-    display.set_pen(255, 196, 0)
+    display.set_pen(customPen255196000)
     if reading < FUEL_RESERVE:
         display.set_pen(redPen)
         display.text("R", width - 25, 8, width, 3)
@@ -554,8 +560,6 @@ def draw_home_rpm():
 # Screens
 def screen_home():
     display_clear()
-    if USE_BG_IMAGE:
-        screen_buffer.blit(background, 0, 0, 0)
 
     # Home
     draw_home_layout(pens[LAYOUT_PEN_ID])
@@ -669,7 +673,7 @@ def screen_fuel():
     reading = scale_value(acq_adc(adc1), 0, 100, 65535)
     print("ADC1: " + str(reading))
 
-    display.set_pen(255, 196, 0)
+    display.set_pen(customPen255196000)
     if reading < FUEL_RESERVE:
         display.set_pen(redPen)
         display.text("R", width - 55, 59, width, 11)
@@ -879,18 +883,7 @@ screen_functions = [
 
 # Main
 spinner = "-\|/"
-if USE_BG_IMAGE:
-    background.blit(screen_buffer, 0, 0, 0)
-    display.update()
-    if not BG_IMAGE_SLOW_LOADING:
-        utime.sleep(2)
-    load_bg_image(
-        display, height, width, display_buffer, BG_IMAGE_SLOW_LOADING, BG_IMAGES[1]
-    )
-    background.blit(screen_buffer, 0, 0, 0)
-    display.update()
-    if not BG_IMAGE_SLOW_LOADING:
-        utime.sleep(0.5)
+
 
 while True:
     utime.sleep(UPDATE_INTERVAL)
