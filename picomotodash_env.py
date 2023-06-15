@@ -89,7 +89,6 @@ def read_config(CONFIG_FILE):
         config = ujson.load(config_file)
 
     USE_BG_IMAGE = config['USE_BG_IMAGE']
-    BG_IMAGE_SLOW_LOADING = config['BG_IMAGE_SLOW_LOADING']
     FUEL_RESERVE = config['FUEL_RESERVE']
     RPM_MAX = config['RPM_MAX']
     RPM_REDLINE = config['RPM_REDLINE']
@@ -99,7 +98,6 @@ def read_config(CONFIG_FILE):
 
     return [
         USE_BG_IMAGE,
-        BG_IMAGE_SLOW_LOADING,
         FUEL_RESERVE,
         RPM_MAX,
         RPM_REDLINE,
