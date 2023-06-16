@@ -5,11 +5,11 @@
     "RPM_REDLINE": 10000,
     "BATTERY_TH": [
         11,
-        12,
+        12
     ],
     "TEMP_TH": [
         19,
-        24,
+        24
     ],
     "INFO_TEXT": "Salvatore La Bua - http://twitter.com/slabua"
 }

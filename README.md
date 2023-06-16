@@ -2,7 +2,7 @@
 [![License: GPLv3][GPLimg]][GPLurl]
 [![GitHub Tag][GHTimg]][GHTurl]
 
-### A Motorcycle Dashboard based on the [Raspberry Pi Pico](https://www.raspberrypi.org/products/raspberry-pi-pico/) and the [Pimoroni Pico Display Pack](https://shop.pimoroni.com/products/pico-display-pack).
+### A Motorcycle Dashboard based on the [Raspberry Pi Pico](https://www.raspberrypi.org/products/raspberry-pi-pico/) and the [Pimoroni Pico Display Pack](https://shop.pimoroni.com/products/pico-display-pack)
 
 ## Components
 - Raspberry Pi Pico
@@ -35,12 +35,12 @@
 ## Usage
 
 ## Screens
-- [Home](#Home)
-- [Battery](#Battery)
-- [Fuel](#Fuel)
-- [Temperature](#Temperature)
-- [RPM](#RPM)
-- [STATS](#STATS)
+- [Home](###Home)
+- [Battery](###Battery)
+- [Fuel](###Fuel)
+- [Temperature](###Temperature)
+- [RPM](###RPM)
+- [STATS](###STATS)
 
 ### Home
 ![Home](https://lh3.googleusercontent.com/pw/ACtC-3fY9eTrfeXZWzNof3XDhlGW4b0iINYiCK-arYHpiaK88f8zIZf4uVtTmwLXD-MLb32lzvW6lec1UicTL3cPUCY_-cxZ3S_L31h9lXh_ZYtvAxzrkHlZ4aJ4AoH3m6Uu3duIu12AwbdDtfm1ebb0GLGcgw=s360-no)
