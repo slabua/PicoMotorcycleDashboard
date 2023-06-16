@@ -16,11 +16,10 @@ import math
 import ds18x20
 import machine
 import onewire
-from picographics import PicoGraphics, DISPLAY_PICO_DISPLAY, PEN_P4
 import picomotodash_env as pmdenv
-from pimoroni import RGBLED
 import utime
-
+from picographics import DISPLAY_PICO_DISPLAY, PEN_P4, PicoGraphics
+from pimoroni import RGBLED
 
 # Timer
 timer = machine.Timer()
@@ -532,9 +531,7 @@ def draw_home_temperature():
 def draw_home_rpm():
     reading = scale_value(acq_adc(adc2), 0, RPM_MAX, 65535)
 
-    at_redline_width = round(
-        (width - 100 - CLIP_MARGIN) * RPM_REDLINE / RPM_MAX
-    )
+    at_redline_width = round((width - 100 - CLIP_MARGIN) * RPM_REDLINE / RPM_MAX)
     rpm_width = round((width - 100 - CLIP_MARGIN) * reading / RPM_MAX)
     redline_delta = rpm_width - at_redline_width
 
@@ -739,8 +736,7 @@ def screen_temperature():
 
     display.set_pen(blackPen)
     display.text(
-        "T" + str(temp_id) + ":  " +
-        "{:.1f}".format(temperatures[temp_id]) + " c",
+        "T" + str(temp_id) + ":  " + "{:.1f}".format(temperatures[temp_id]) + " c",
         8,
         6,
         width,
@@ -812,8 +808,7 @@ def screen_rpm():
                 x,
                 round(height / 3 + 10),
                 1,
-                round((height / 3 * 2 - 10) -
-                      ((height / 3 * 2 - 10) * (x / width))),
+                round((height / 3 * 2 - 10) - ((height / 3 * 2 - 10) * (x / width))),
             )
     elif RPM_LAYOUT_ID == 1:
         for x in range(0, width):
@@ -821,9 +816,11 @@ def screen_rpm():
                 x,
                 round(height / 3 + 10),
                 1,
-                round((height / 3 * 2 - 10) -
-                      ((height / 3 * 2 - 10) * (x / width)) +
-                      ((0.01 * x ** 2 - x) / 40)),
+                round(
+                    (height / 3 * 2 - 10)
+                    - ((height / 3 * 2 - 10) * (x / width))
+                    + ((0.01 * x**2 - x) / 40)
+                ),
             )
     elif RPM_LAYOUT_ID == 2:
         for x in range(0, width):
@@ -831,8 +828,24 @@ def screen_rpm():
                 x,
                 round(height / 3 + 10),
                 1,
-                round((height / 3 * 2 - 10) - 0.8 * (math.sqrt(2 * H**2 *
-                      (1 - ((x - (width - 0) * 2 - 0)**2 / (width * 2 + 0)**2)))) + 0),
+                round(
+                    (height / 3 * 2 - 10)
+                    - 0.8
+                    * (
+                        math.sqrt(
+                            2
+                            * H**2
+                            * (
+                                1
+                                - (
+                                    (x - (width - 0) * 2 - 0) ** 2
+                                    / (width * 2 + 0) ** 2
+                                )
+                            )
+                        )
+                    )
+                    + 0
+                ),
             )
     elif RPM_LAYOUT_ID == 3:
         for x in range(0, width):
@@ -840,8 +853,15 @@ def screen_rpm():
                 x,
                 round(height / 3 + 10),
                 1,
-                round((height / 3 * 2 - 10) - (math.sqrt(H**2 *
-                      (1 - ((x - width - 0)**2 / (width + 0)**2)))) + 0),
+                round(
+                    (height / 3 * 2 - 10)
+                    - (
+                        math.sqrt(
+                            H**2 * (1 - ((x - width - 0) ** 2 / (width + 0) ** 2))
+                        )
+                    )
+                    + 0
+                ),
             )
     elif RPM_LAYOUT_ID == 4:
         for x in range(0, 80):
