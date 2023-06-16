@@ -18,9 +18,8 @@ import machine
 import onewire
 import picomotodash_env as pmdenv
 import utime
-from picographics import PicoGraphics, DISPLAY_PICO_DISPLAY, PEN_P4
+from picographics import DISPLAY_PICO_DISPLAY, PEN_P4, PicoGraphics
 from pimoroni import RGBLED
-
 
 # Timer
 timer = machine.Timer()
@@ -736,12 +735,13 @@ def screen_temperature():
         curr_x += TEMP_BAR_OFFSET
 
     display.set_pen(blackPen)
-    display.text("T" + str(temp_id) + ":  " + "{:.1f}".format(temperatures[temp_id]) + " c",
-                 8,
-                 6,
-                 width,
-                 5,
-                 )
+    display.text(
+        "T" + str(temp_id) + ":  " + "{:.1f}".format(temperatures[temp_id]) + " c",
+        8,
+        6,
+        width,
+        5,
+    )
 
     display.update()
 
@@ -819,7 +819,7 @@ def screen_rpm():
                 round(
                     (height / 3 * 2 - 10)
                     - ((height / 3 * 2 - 10) * (x / width))
-                    + ((0.01 * x ** 2 - x) / 40)
+                    + ((0.01 * x**2 - x) / 40)
                 ),
             )
     elif RPM_LAYOUT_ID == 2:
@@ -835,12 +835,11 @@ def screen_rpm():
                         math.sqrt(
                             2
                             * H**2
-                            *
-                            (
+                            * (
                                 1
                                 - (
-                                    (x - (width - 0) * 2 - 0)**2
-                                    / (width * 2 + 0)**2
+                                    (x - (width - 0) * 2 - 0) ** 2
+                                    / (width * 2 + 0) ** 2
                                 )
                             )
                         )
@@ -858,8 +857,7 @@ def screen_rpm():
                     (height / 3 * 2 - 10)
                     - (
                         math.sqrt(
-                            H**2 *
-                            (1 - ((x - width - 0)**2 / (width + 0)**2))
+                            H**2 * (1 - ((x - width - 0) ** 2 / (width + 0) ** 2))
                         )
                     )
                     + 0
