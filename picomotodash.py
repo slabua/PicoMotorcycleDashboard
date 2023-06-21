@@ -19,7 +19,12 @@ import onewire
 import picomotodash_env as pmdenv
 import qrcode
 import utime
-from picographics import DISPLAY_PICO_DISPLAY, DISPLAY_PICO_DISPLAY_2, PEN_P4, PicoGraphics
+from picographics import (
+    DISPLAY_PICO_DISPLAY,
+    DISPLAY_PICO_DISPLAY_2,
+    PEN_P4,
+    PicoGraphics,
+)
 from pimoroni import RGBLED
 
 # Timer
@@ -191,8 +196,9 @@ def draw_qr_code(ox, oy, size, code):
     for x in range(size):
         for y in range(size):
             if code.get_module(x, y):
-                display.rectangle(ox + x * module_size, oy + y *
-                                  module_size, module_size, module_size)
+                display.rectangle(
+                    ox + x * module_size, oy + y * module_size, module_size, module_size
+                )
 
 
 # GPIO
@@ -504,21 +510,28 @@ def draw_home_fuel():
     if SPLIT_BARS:
         display.set_pen(blackPen)
         for r in range(100, width - CLIP_MARGIN, 34):
-            display.rectangle(r, round((height / 135) * 5),
-                              2, round((height / 135) * 25))
+            display.rectangle(
+                r, round((height / 135) * 5), 2, round((height / 135) * 25)
+            )
 
     if reading < FUEL_RESERVE:
         display.set_pen(redPen)
-        display.text("R", width - round((width / 240) * 25),
-                     8, width, round((height / 135) * 3))
+        display.text(
+            "R", width - round((width / 240) * 25), 8, width, round((height / 135) * 3)
+        )
 
 
 def draw_home_battery():
     reading = scale_value(acq_adc(adc0), 0, 16, 65535)
 
     set_battery_pen(reading)
-    display.text("{:.2f}".format(reading), round((width / 240) * 150), 8 +
-                 1 * round((height / 135) * 34), width, round((height / 135) * 3))
+    display.text(
+        "{:.2f}".format(reading),
+        round((width / 240) * 150),
+        8 + 1 * round((height / 135) * 34),
+        width,
+        round((height / 135) * 3),
+    )
 
 
 def draw_home_temperature():
@@ -536,10 +549,20 @@ def draw_home_temperature():
             temperature = ds_sensor.read_temp(roms[temp_id - 1])
 
         set_temperature_pen(temperature)
-        display.text("T" + str(temp_id) + ":", temp_x_pos - 50, 8 + 2 *
-                     round((height / 135) * 34), width, round((height / 135) * 3))
-        display.text("{:.2f}".format(temperature), round((width / 240) * temp_x_pos) -
-                     round((width / 240) * 3), 8 + 2 * round((height / 135) * 34), width, round((height / 135) * 3))
+        display.text(
+            "T" + str(temp_id) + ":",
+            temp_x_pos - 50,
+            8 + 2 * round((height / 135) * 34),
+            width,
+            round((height / 135) * 3),
+        )
+        display.text(
+            "{:.2f}".format(temperature),
+            round((width / 240) * temp_x_pos) - round((width / 240) * 3),
+            8 + 2 * round((height / 135) * 34),
+            width,
+            round((height / 135) * 3),
+        )
 
     else:
         temp_x_tn = TEMP_X_OFFSET
@@ -549,8 +572,13 @@ def draw_home_temperature():
         temperature = acq_temp(temp_builtin)
 
         set_temperature_pen(temperature)
-        display.text("{:.2f}".format(temperature), round((width / 240) * temp_x_pos),
-                     8 + 2 * round((height / 135) * 34), width, round((height / 135) * 3))
+        display.text(
+            "{:.2f}".format(temperature),
+            round((width / 240) * temp_x_pos),
+            8 + 2 * round((height / 135) * 34),
+            width,
+            round((height / 135) * 3),
+        )
 
         try:
             ds_sensor.convert_temp()
@@ -564,7 +592,9 @@ def draw_home_temperature():
             display.text(
                 "{:.2f}".format(temperature),
                 round((width / 240) * temp_x_pos) + (temp_x_tn * (ows + 1)),
-                8 + 2 * round((height / 135) * 34), width, round((height / 135) * 3)
+                8 + 2 * round((height / 135) * 34),
+                width,
+                round((height / 135) * 3),
             )
 
 
@@ -577,11 +607,19 @@ def draw_home_rpm():
 
     display.set_pen(cyanPen)
     if reading > RPM_REDLINE:
-        display.rectangle(100, round((height / 135) * 5) + 3 * round((height / 135)
-                          * 34), at_redline_width, round((height / 135) * 24))
+        display.rectangle(
+            100,
+            round((height / 135) * 5) + 3 * round((height / 135) * 34),
+            at_redline_width,
+            round((height / 135) * 24),
+        )
         display.set_pen(redPen)
-        display.rectangle(100 + at_redline_width, round((height / 135) * 5) +
-                          3 * round((height / 135) * 34), redline_delta, round((height / 135) * 24))
+        display.rectangle(
+            100 + at_redline_width,
+            round((height / 135) * 5) + 3 * round((height / 135) * 34),
+            redline_delta,
+            round((height / 135) * 24),
+        )
     else:
         display.rectangle(
             100,
@@ -593,8 +631,12 @@ def draw_home_rpm():
     if SPLIT_BARS:
         display.set_pen(blackPen)
         for r in range(100, width - CLIP_MARGIN, 10):
-            display.rectangle(r, round((height / 135) * 5) + 3 *
-                              round((height / 135) * 34), 2, round((height / 135) * 24))
+            display.rectangle(
+                r,
+                round((height / 135) * 5) + 3 * round((height / 135) * 34),
+                2,
+                round((height / 135) * 24),
+            )
 
 
 # Screens
@@ -607,12 +649,17 @@ def screen_home():
     if LAYOUT_PEN_ID == 7:
         display.set_pen(whitePen)
     display.text("F  >", 10, 8, width, round((height / 135) * 3))
-    display.text("B  >", 10, 8 + 1 * round((height / 135) * 34),
-                 width, round((height / 135) * 3))
-    display.text("T  >", 10, 8 + 2 * round((height / 135) * 34),
-                 width, round((height / 135) * 3))
-    display.text("R  >", 10, 8 + 3 * round((height / 135) * 34),
-                 width, round((height / 135) * 3))
+    display.text(
+        "B  >", 10, 8 + 1 * round((height / 135) * 34),
+        width, round((height / 135) * 3)
+    )
+    display.text(
+        "T  >", 10, 8 + 2 * round((height / 135) *
+                                  34),  width, round((height / 135) * 3)
+    )
+    display.text(
+        "R  >", 10, 8 + 3 * round((height / 135) * 34), width, round((height / 135) * 3)
+    )
 
     display.set_clip(100, 0, width - 100 - CLIP_MARGIN, height)
 
@@ -698,11 +745,21 @@ def screen_battery():
     display.rectangle(76 - batt_w_diff, 122, 3, 2)
 
     if LARGE_BATTERY:
-        display.text("{:.1f}".format(reading) + "", round((width / 240) * 90),
-                     round((height / 135) * 71), width, 9)
+        display.text(
+            "{:.1f}".format(reading) + "",
+            round((width / 240) * 90),
+            round((height / 135) * 71),
+            width,
+            9,
+        )
     else:
-        display.text("{:.1f}".format(reading) + "", round((width / 240) * 60),
-                     round((height / 135) * 59), width, 11)
+        display.text(
+            "{:.1f}".format(reading) + "",
+            round((width / 240) * 60),
+            round((height / 135) * 59),
+            width,
+            11,
+        )
 
     display.set_pen(blackPen)
     display.rectangle(0, 87, 80 - batt_w_diff, 3)
@@ -745,8 +802,13 @@ def screen_fuel():
 
     if reading < FUEL_RESERVE:
         display.set_pen(redPen)
-        display.text("R", width - round((width / 240) * 55),
-                     round((height / 135) * 59), width, 11)
+        display.text(
+            "R",
+            width - round((width / 240) * 55),
+            round((height / 135) * 59),
+            width,
+            11,
+        )
 
     display.update()
 
@@ -813,24 +875,21 @@ def screen_rpm():
     display.set_pen(cyanPen)
     if reading > RPM_REDLINE:
         display.rectangle(
-            0,
-            round(height / 3 + 10),
-            at_redline_width,
-            round(height / 3 * 2 - 10)
+            0, round(height / 3 + 10), at_redline_width, round(height / 3 * 2 - 10)
         )
         display.set_pen(redPen)
         display.rectangle(
             at_redline_width,
             round(height / 3 + 10),
             redline_delta,
-            round(height / 3 * 2 - 10)
+            round(height / 3 * 2 - 10),
         )
     else:
         display.rectangle(
             0,
             round(height / 3 + 10),
             round(width * reading / RPM_MAX),
-            round(height / 3 * 2 - 10)
+            round(height / 3 * 2 - 10),
         )
 
     """
