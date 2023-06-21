@@ -650,12 +650,13 @@ def screen_home():
         display.set_pen(whitePen)
     display.text("F  >", 10, 8, width, round((height / 135) * 3))
     display.text(
-        "B  >", 10, 8 + 1 * round((height / 135) * 34),
-        width, round((height / 135) * 3)
+        "B  >", 10, 8 + 1 * round((height / 135) * 34), width, round((height / 135) * 3)
     )
     display.text(
-        "T  >", 10, 8 + 2 * round((height / 135) *
-                                  34),  width, round((height / 135) * 3)
+        "T  >",
+        10,
+        8 + 2 * round((height / 135) * 34),
+        width, round((height / 135) * 3),
     )
     display.text(
         "R  >", 10, 8 + 3 * round((height / 135) * 34), width, round((height / 135) * 3)
