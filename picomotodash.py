@@ -5,7 +5,7 @@
 __author__ = "Salvatore La Bua"
 __copyright__ = "Copyright 2021, Salvatore La Bua"
 __license__ = "GPL"
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __maintainer__ = "Salvatore La Bua"
 __email__ = "slabua@gmail.com"
 __status__ = "Development"
