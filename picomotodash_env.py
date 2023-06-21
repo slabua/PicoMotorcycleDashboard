@@ -95,6 +95,7 @@ def read_config(CONFIG_FILE):
     BATTERY_TH = config["BATTERY_TH"]
     TEMP_TH = config["TEMP_TH"]
     INFO_TEXT = config["INFO_TEXT"]
+    QR_URL = config["QR_URL"]
 
     return [
         USE_BG_IMAGE,
@@ -104,4 +105,5 @@ def read_config(CONFIG_FILE):
         BATTERY_TH,
         TEMP_TH,
         INFO_TEXT,
+        QR_URL,
     ]

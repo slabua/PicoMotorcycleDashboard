@@ -89,6 +89,7 @@ SCREENS = [
     BATTERY_TH,
     TEMP_TH,
     INFO_TEXT,
+    QR_URL,
 ] = pmdenv.read_config(CONFIG_FILE)
 
 temp_id = 0
