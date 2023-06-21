@@ -17,6 +17,7 @@ import ds18x20
 import machine
 import onewire
 import picomotodash_env as pmdenv
+import qrcode
 import utime
 from picographics import DISPLAY_PICO_DISPLAY, DISPLAY_PICO_DISPLAY_2, PEN_P4, PicoGraphics
 from pimoroni import RGBLED
@@ -55,6 +56,7 @@ INFO_X_MIN = -5000
 INFO_X_SCROLL = -10
 INFO_SCROLL_DELAY = 0.01
 INFO_TEXT = "Salvatore La Bua - http://twitter.com/slabua"
+QR_URL = "http://twitter.com/slabua"
 
 BACKLIGHT_VALUES = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 BV = 7
@@ -172,6 +174,24 @@ def set_battery_pen(reading):
         display.set_pen(customPen255128010)
     else:
         display.set_pen(customPen010255010)
+
+
+def measure_qr_code(size, code):
+    w, _ = code.get_size()
+    module_size = int(size / w)
+    return module_size * w, module_size
+
+
+def draw_qr_code(ox, oy, size, code):
+    size, module_size = measure_qr_code(size, code)
+    display.set_pen(blackPen)
+    display.rectangle(ox, oy, size, size)
+    display.set_pen(whitePen)
+    for x in range(size):
+        for y in range(size):
+            if code.get_module(x, y):
+                display.rectangle(ox + x * module_size, oy + y *
+                                  module_size, module_size, module_size)
 
 
 # GPIO
@@ -301,6 +321,14 @@ def int_b(pin):
     print("Available memory after cleanup: ", gc.mem_free())
     gc.collect()
 
+    code = qrcode.QRCode()
+    code.set_text(QR_URL)
+    max_size = min(width, height)
+
+    size, _ = measure_qr_code(max_size, code)
+    left = int((width // 2) - (size // 2))
+    top = int((height // 2) - (size // 2))
+
     if not button_y.value():
         info_x_pos = INFO_X
         SPLIT_BARS = not SPLIT_BARS
@@ -316,7 +344,9 @@ def int_b(pin):
 
             display_clear()
             display.set_pen(greenPen)
-            display.text(INFO_TEXT, info_x_pos, 8, 10000, 16)
+            # display.text(INFO_TEXT, info_x_pos, 8, 10000, 16)
+
+            draw_qr_code(left, top, max_size, code)
 
             display.update()
 
