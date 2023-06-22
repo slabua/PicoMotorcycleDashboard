@@ -518,9 +518,7 @@ def draw_home_fuel():
 
     if reading < FUEL_RESERVE:
         display.set_pen(redPen)
-        display.text(
-            "R", width - round(w_factor * 25), 8, width, round(h_factor * 3)
-        )
+        display.text("R", width - round(w_factor * 25), 8, width, round(h_factor * 3))
 
 
 def draw_home_battery():
@@ -651,18 +649,15 @@ def screen_home():
     if LAYOUT_PEN_ID == 7:
         display.set_pen(whitePen)
     display.text("F  >", 10, 8, width, round(h_factor * 3))
-    display.text(
-        "B  >", 10, 8 + 1 * round(h_factor * 34), width, round(h_factor * 3)
-    )
+    display.text("B  >", 10, 8 + 1 * round(h_factor * 34), width, round(h_factor * 3))
     display.text(
         "T  >",
         10,
         8 + 2 * round(h_factor * 34),
-        width, round(h_factor * 3),
+        width,
+        round(h_factor * 3),
     )
-    display.text(
-        "R  >", 10, 8 + 3 * round(h_factor * 34), width, round(h_factor * 3)
-    )
+    display.text("R  >", 10, 8 + 3 * round(h_factor * 34), width, round(h_factor * 3))
 
     display.set_clip(100, 0, width - 100 - CLIP_MARGIN, height)
 
