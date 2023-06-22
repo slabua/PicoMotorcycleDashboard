@@ -5,7 +5,7 @@
 __author__ = "Salvatore La Bua"
 __copyright__ = "Copyright 2021, Salvatore La Bua"
 __license__ = "GPL"
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __maintainer__ = "Salvatore La Bua"
 __email__ = "slabua@gmail.com"
 __status__ = "Development"
@@ -17,8 +17,14 @@ import ds18x20
 import machine
 import onewire
 import picomotodash_env as pmdenv
+import qrcode
 import utime
-from picographics import DISPLAY_PICO_DISPLAY, PEN_P4, PicoGraphics
+from picographics import (
+    DISPLAY_PICO_DISPLAY,
+    DISPLAY_PICO_DISPLAY_2,
+    PEN_P4,
+    PicoGraphics,
+)
 from pimoroni import RGBLED
 
 # Timer
@@ -55,6 +61,7 @@ INFO_X_MIN = -5000
 INFO_X_SCROLL = -10
 INFO_SCROLL_DELAY = 0.01
 INFO_TEXT = "Salvatore La Bua - http://twitter.com/slabua"
+QR_URL = "http://twitter.com/slabua"
 
 BACKLIGHT_VALUES = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 BV = 7
@@ -87,6 +94,7 @@ SCREENS = [
     BATTERY_TH,
     TEMP_TH,
     INFO_TEXT,
+    QR_URL,
 ] = pmdenv.read_config(CONFIG_FILE)
 
 temp_id = 0
@@ -174,6 +182,25 @@ def set_battery_pen(reading):
         display.set_pen(customPen010255010)
 
 
+def measure_qr_code(size, code):
+    w, _ = code.get_size()
+    module_size = int(size / w)
+    return module_size * w, module_size
+
+
+def draw_qr_code(ox, oy, size, code):
+    size, module_size = measure_qr_code(size, code)
+    display.set_pen(blackPen)
+    display.rectangle(ox, oy, size, size)
+    display.set_pen(whitePen)
+    for x in range(size):
+        for y in range(size):
+            if code.get_module(x, y):
+                display.rectangle(
+                    ox + x * module_size, oy + y * module_size, module_size, module_size
+                )
+
+
 # GPIO
 temp_builtin = machine.ADC(4)  # Built-in temperature sensor
 
@@ -187,13 +214,25 @@ adc2 = machine.ADC(machine.Pin(28, machine.Pin.IN))  # RPM adc
 
 
 # Pico Display boilerplate
-display = PicoGraphics(display=DISPLAY_PICO_DISPLAY, rotate=0, pen_type=PEN_P4)
+display = PicoGraphics(display=DISPLAY_PICO_DISPLAY_2, rotate=0, pen_type=PEN_P4)
 width, height = display.get_bounds()
+w_factor = width / 240
+h_factor = height / 135
 led = RGBLED(6, 7, 8)
+
+
+# QR Code
+code = qrcode.QRCode()
+code.set_text(QR_URL)
+max_size = min(width, height)
+
+size, _ = measure_qr_code(max_size, code)
+left = int((width // 2) - (size // 2))
+top = int((height // 2) - (size // 2))
 
 gc.collect()
 
-if USE_BG_IMAGE:
+if USE_BG_IMAGE and width == 240:  # TODO check
     import jpegdec
 
     j = jpegdec.JPEG(display)
@@ -316,7 +355,9 @@ def int_b(pin):
 
             display_clear()
             display.set_pen(greenPen)
-            display.text(INFO_TEXT, info_x_pos, 8, 10000, 16)
+            # display.text(INFO_TEXT, info_x_pos, 8, 10000, 16)
+
+            draw_qr_code(left, top, max_size, code)
 
             display.update()
 
@@ -458,28 +499,39 @@ def draw_home_layout(pen):
 def draw_home_fuel():
     reading = scale_value(acq_adc(adc1), 0, 100, 65535)
 
-    display.set_pen(customPen255196000)
     if reading < FUEL_RESERVE:
         display.set_pen(redPen)
-        display.text("R", width - 25, 8, width, 3)
+    else:
+        display.set_pen(customPen255196000)
+
     display.rectangle(
         100,
-        5,
+        round(h_factor * 5),
         round((width - 100 - CLIP_MARGIN) * reading / 100),
-        25,
+        round(h_factor * 25),
     )
 
     if SPLIT_BARS:
         display.set_pen(blackPen)
         for r in range(100, width - CLIP_MARGIN, 34):
-            display.rectangle(r, 5, 2, 25)
+            display.rectangle(r, round(h_factor * 5), 2, round(h_factor * 25))
+
+    if reading < FUEL_RESERVE:
+        display.set_pen(redPen)
+        display.text("R", width - round(w_factor * 25), 8, width, round(h_factor * 3))
 
 
 def draw_home_battery():
     reading = scale_value(acq_adc(adc0), 0, 16, 65535)
 
     set_battery_pen(reading)
-    display.text("{:.2f}".format(reading), 150, 41, width, 3)
+    display.text(
+        "{:.2f}".format(reading),
+        round(w_factor * 150),
+        8 + 1 * round(h_factor * 34),
+        width,
+        round(h_factor * 3),
+    )
 
 
 def draw_home_temperature():
@@ -497,8 +549,20 @@ def draw_home_temperature():
             temperature = ds_sensor.read_temp(roms[temp_id - 1])
 
         set_temperature_pen(temperature)
-        display.text("T" + str(temp_id) + ":", temp_x_pos - 50, 75, width, 3)
-        display.text("{:.2f}".format(temperature), temp_x_pos, 75, width, 3)
+        display.text(
+            "T" + str(temp_id) + ":",
+            temp_x_pos - 50,
+            8 + 2 * round(h_factor * 34),
+            width,
+            round(h_factor * 3),
+        )
+        display.text(
+            "{:.2f}".format(temperature),
+            round(w_factor * temp_x_pos) - round(w_factor * 3),
+            8 + 2 * round(h_factor * 34),
+            width,
+            round(h_factor * 3),
+        )
 
     else:
         temp_x_tn = TEMP_X_OFFSET
@@ -508,7 +572,13 @@ def draw_home_temperature():
         temperature = acq_temp(temp_builtin)
 
         set_temperature_pen(temperature)
-        display.text("{:.2f}".format(temperature), temp_x_pos, 75, width, 3)
+        display.text(
+            "{:.2f}".format(temperature),
+            round(w_factor * temp_x_pos),
+            8 + 2 * round(h_factor * 34),
+            width,
+            round(h_factor * 3),
+        )
 
         try:
             ds_sensor.convert_temp()
@@ -521,10 +591,10 @@ def draw_home_temperature():
             set_temperature_pen(temperature)
             display.text(
                 "{:.2f}".format(temperature),
-                temp_x_pos + (temp_x_tn * (ows + 1)),
-                75,
+                round(w_factor * temp_x_pos) + (temp_x_tn * (ows + 1)),
+                8 + 2 * round(h_factor * 34),
                 width,
-                3,
+                round(h_factor * 3),
             )
 
 
@@ -537,21 +607,36 @@ def draw_home_rpm():
 
     display.set_pen(cyanPen)
     if reading > RPM_REDLINE:
-        display.rectangle(100, 106, at_redline_width, 24)
+        display.rectangle(
+            100,
+            round(h_factor * 5) + 3 * round(h_factor * 34),
+            at_redline_width,
+            round(h_factor * 24),
+        )
         display.set_pen(redPen)
-        display.rectangle(100 + at_redline_width, 106, redline_delta, 24)
+        display.rectangle(
+            100 + at_redline_width,
+            round(h_factor * 5) + 3 * round(h_factor * 34),
+            redline_delta,
+            round(h_factor * 24),
+        )
     else:
         display.rectangle(
             100,
-            106,
+            round(h_factor * 5) + 3 * round(h_factor * 34),
             round((width - 100) * reading / RPM_MAX),
-            24,
+            round(h_factor * 24),
         )
 
     if SPLIT_BARS:
         display.set_pen(blackPen)
         for r in range(100, width - CLIP_MARGIN, 10):
-            display.rectangle(r, 106, 2, 24)
+            display.rectangle(
+                r,
+                round(h_factor * 5) + 3 * round(h_factor * 34),
+                2,
+                round(h_factor * 24),
+            )
 
 
 # Screens
@@ -563,10 +648,16 @@ def screen_home():
 
     if LAYOUT_PEN_ID == 7:
         display.set_pen(whitePen)
-    display.text("Fuel", 10, 8, width, 3)
-    display.text("Batt", 10, 41, width, 3)
-    display.text("Temp", 10, 75, width, 3)
-    display.text("RPM", 10, 108, width, 3)
+    display.text("F  >", 10, 8, width, round(h_factor * 3))
+    display.text("B  >", 10, 8 + 1 * round(h_factor * 34), width, round(h_factor * 3))
+    display.text(
+        "T  >",
+        10,
+        8 + 2 * round(h_factor * 34),
+        width,
+        round(h_factor * 3),
+    )
+    display.text("R  >", 10, 8 + 3 * round(h_factor * 34), width, round(h_factor * 3))
 
     display.set_clip(100, 0, width - 100 - CLIP_MARGIN, height)
 
@@ -593,7 +684,7 @@ def screen_battery():
     print("ADC0: " + str(reading))
 
     set_battery_pen(reading)
-    display.rectangle(0, 0, width, round(height / 3))
+    display.rectangle(0, 0, width, round(135 / 3))
 
     display.set_pen(blackPen)
     display.text(SCREENS[current_screen], 8, 6, width, 5)
@@ -652,9 +743,21 @@ def screen_battery():
     display.rectangle(76 - batt_w_diff, 122, 3, 2)
 
     if LARGE_BATTERY:
-        display.text("{:.1f}".format(reading) + "", 90, 71, width, 9)
+        display.text(
+            "{:.1f}".format(reading) + "",
+            round(w_factor * 90),
+            round(h_factor * 71),
+            width,
+            9,
+        )
     else:
-        display.text("{:.1f}".format(reading) + "", 60, 59, width, 11)
+        display.text(
+            "{:.1f}".format(reading) + "",
+            round(w_factor * 60),
+            round(h_factor * 59),
+            width,
+            11,
+        )
 
     display.set_pen(blackPen)
     display.rectangle(0, 87, 80 - batt_w_diff, 3)
@@ -670,17 +773,18 @@ def screen_fuel():
     reading = scale_value(acq_adc(adc1), 0, 100, 65535)
     print("ADC1: " + str(reading))
 
-    display.set_pen(customPen255196000)
     if reading < FUEL_RESERVE:
         display.set_pen(redPen)
-        display.text("R", width - 55, 59, width, 11)
+    else:
+        display.set_pen(customPen255196000)
+
     display.rectangle(
         0,
         round(height / 3 + 10),
         round(width * reading / 100),
         round(height / 3 * 2 - 10),
     )
-    display.rectangle(0, 0, width, round(height / 3))
+    display.rectangle(0, 0, width, round(135 / 3))
 
     display.set_pen(blackPen)
     display.text(SCREENS[current_screen], 8, 6, width, 5)
@@ -693,6 +797,16 @@ def screen_fuel():
                 3,
                 round(height / 3 * 2 - 10),
             )
+
+    if reading < FUEL_RESERVE:
+        display.set_pen(redPen)
+        display.text(
+            "R",
+            width - round(w_factor * 55),
+            round(h_factor * 59),
+            width,
+            11,
+        )
 
     display.update()
 
@@ -721,7 +835,7 @@ def screen_temperature():
         print("Temperature acquisition failed, retrying...")
 
     set_temperature_pen(temperatures[temp_id])
-    display.rectangle(0, 0, width, round(height / 3))
+    display.rectangle(0, 0, width, round(135 / 3))
 
     curr_x = 0
     for t in temperature_matrix[temp_id]:
@@ -752,33 +866,31 @@ def screen_rpm():
     reading = scale_value(acq_adc(adc2), 0, RPM_MAX, 65535)
     print("ADC2: " + str(reading))
 
-    # at_redline_width = round(width * RPM_REDLINE / RPM_MAX)
-    # rpm_width = round(width * reading / RPM_MAX)
-    # redline_delta = rpm_width - at_redline_width
+    at_redline_width = round(width * RPM_REDLINE / RPM_MAX)
+    rpm_width = round(width * reading / RPM_MAX)
+    redline_delta = rpm_width - at_redline_width
 
-    # display.set_pen(cyanPen)
-    # if reading > RPM_REDLINE:
-    #     display.rectangle(
-    #         0,
-    #         round(height / 3 + 10),
-    #         at_redline_width,
-    #         round(height / 3 * 2 - 10)
-    #     )
-    #     display.set_pen(redPen)
-    #     display.rectangle(
-    #         at_redline_width,
-    #         round(height / 3 + 10),
-    #         redline_delta,
-    #         round(height / 3 * 2 - 10)
-    #     )
-    # else:
-    #     display.rectangle(
-    #         0,
-    #         round(height / 3 + 10),
-    #         round(width * reading / RPM_MAX),
-    #         round(height / 3 * 2 - 10)
-    #     )
+    display.set_pen(cyanPen)
+    if reading > RPM_REDLINE:
+        display.rectangle(
+            0, round(height / 3 + 10), at_redline_width, round(height / 3 * 2 - 10)
+        )
+        display.set_pen(redPen)
+        display.rectangle(
+            at_redline_width,
+            round(height / 3 + 10),
+            redline_delta,
+            round(height / 3 * 2 - 10),
+        )
+    else:
+        display.rectangle(
+            0,
+            round(height / 3 + 10),
+            round(width * reading / RPM_MAX),
+            round(height / 3 * 2 - 10),
+        )
 
+    """
     if reading > RPM_REDLINE:
         display.set_pen(redPen)
     else:
@@ -789,6 +901,7 @@ def screen_rpm():
         round(width * reading / RPM_MAX),
         round(height / 3 * 2 - 10),
     )
+    """
 
     if SPLIT_BARS:
         display.set_pen(blackPen)
@@ -868,7 +981,7 @@ def screen_rpm():
             display.rectangle(x, round(height / 3 + 10), 1, 20)
 
     display.set_pen(whitePen)
-    display.text(SCREENS[current_screen], 8, 50, width, 3)
+    display.text(SCREENS[current_screen], 8, 50, width, round(h_factor * 3))
     if reading >= RPM_REDLINE:
         display.set_pen(redPen)
     display.text("{:.0f}".format(reading), 8, 6, width, 6)
@@ -883,10 +996,10 @@ def screen_stats():
     print("Uptime: " + str(uptime))
 
     display.set_pen(whitePen)
-    display.text(SCREENS[current_screen], 10, 8, width, 3)
+    display.text(SCREENS[current_screen], 10, 8, width, round(h_factor * 3))
 
     display.set_pen(greenPen)
-    display.text(str(uptime) + " s", 0, 70, width, 6)
+    display.text(str(uptime) + " s", 0, 70, width, round(h_factor * 6))
 
     display.update()
 
