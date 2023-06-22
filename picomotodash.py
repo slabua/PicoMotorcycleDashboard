@@ -220,6 +220,16 @@ w_factor = width / 240
 h_factor = height / 135
 led = RGBLED(6, 7, 8)
 
+
+# QR Code
+code = qrcode.QRCode()
+code.set_text(QR_URL)
+max_size = min(width, height)
+
+size, _ = measure_qr_code(max_size, code)
+left = int((width // 2) - (size // 2))
+top = int((height // 2) - (size // 2))
+
 gc.collect()
 
 if USE_BG_IMAGE and width == 240:  # TODO check
@@ -329,14 +339,6 @@ def int_b(pin):
     gc.collect()
     print("Available memory after cleanup: ", gc.mem_free())
     gc.collect()
-
-    code = qrcode.QRCode()
-    code.set_text(QR_URL)
-    max_size = min(width, height)
-
-    size, _ = measure_qr_code(max_size, code)
-    left = int((width // 2) - (size // 2))
-    top = int((height // 2) - (size // 2))
 
     if not button_y.value():
         info_x_pos = INFO_X
