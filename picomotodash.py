@@ -27,6 +27,11 @@ from picographics import (
 )
 from pimoroni import RGBLED
 
+
+gc.enable()
+gc.threshold(100000)
+
+
 # Timer
 timer = machine.Timer()
 start_time = utime.time()
@@ -230,7 +235,6 @@ size, _ = measure_qr_code(max_size, code)
 left = int((width // 2) - (size // 2))
 top = int((height // 2) - (size // 2))
 
-gc.collect()
 
 if USE_BG_IMAGE and width == 240:  # TODO check
     import jpegdec
@@ -287,6 +291,8 @@ def display_init(bv):
 
 display_init(BACKLIGHT_VALUES[BV])
 
+gc.collect()
+
 
 # Buttons
 button_a = machine.Pin(12, machine.Pin.IN, machine.Pin.PULL_UP)
@@ -335,8 +341,10 @@ def int_b(pin):
     print("Interrupted (B)")
     set_in_use(in_use)
 
+    print("Used memory before cleanup: ", gc.mem_alloc())
     print("Available memory before cleanup: ", gc.mem_free())
     gc.collect()
+    print("Used memory before cleanup: ", gc.mem_alloc())
     print("Available memory after cleanup: ", gc.mem_free())
     gc.collect()
 
@@ -1012,6 +1020,8 @@ screen_functions = [
     screen_rpm,
     screen_stats,
 ]
+
+gc.collect()
 
 
 # Main
