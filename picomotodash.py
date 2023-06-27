@@ -27,7 +27,6 @@ from picographics import (
 )
 from pimoroni import RGBLED
 
-
 gc.enable()
 gc.threshold(100000)
 
