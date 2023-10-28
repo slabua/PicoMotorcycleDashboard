@@ -324,7 +324,7 @@ def int_a(pin):
     display_clear()
 
     utime.sleep(BUTTON_DEBOUNCE_TIME)
-    button_a.irq(handler=int_a)
+    button_a.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_a)
     # machine.enable_irq(state)
 
 
@@ -392,7 +392,7 @@ def int_b(pin):
         display.set_backlight(BACKLIGHT_VALUES[BV])
 
     utime.sleep(BUTTON_DEBOUNCE_TIME)
-    button_b.irq(handler=int_b)
+    button_b.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_b)
 
 
 def int_x(pin):
@@ -437,7 +437,7 @@ def int_x(pin):
         blink_led(0.2, 0, 0, 255)
 
     utime.sleep(BUTTON_DEBOUNCE_TIME)
-    button_x.irq(handler=int_x)
+    button_x.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_x)
 
 
 def int_y(pin):
@@ -469,7 +469,7 @@ def int_y(pin):
         start_time = utime.time()
 
     utime.sleep(BUTTON_DEBOUNCE_TIME)
-    button_y.irq(handler=int_y)
+    button_y.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_y)
 
 
 button_a.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_a)
