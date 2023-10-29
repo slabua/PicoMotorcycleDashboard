@@ -20,7 +20,7 @@ import picomotodash_env as pmdenv
 import qrcode
 import utime
 from picographics import (
-    DISPLAY_PICO_DISPLAY,
+    # DISPLAY_PICO_DISPLAY,
     DISPLAY_PICO_DISPLAY_2,
     PEN_P4,
     PicoGraphics,
