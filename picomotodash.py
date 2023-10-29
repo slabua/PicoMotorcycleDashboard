@@ -105,7 +105,7 @@ temp_id = 0
 onewire_sensors = 0
 
 # TODO make this variable dynamic according to the number of sensors connected
-temperature_matrix = [[], [], []]
+temperature_matrix = [[], [], []]  # type: list[list[float]]
 
 in_use = False
 temp_x_pos = TEMP_X
