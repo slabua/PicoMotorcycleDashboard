@@ -20,7 +20,7 @@ import picomotodash_env as pmdenv
 import qrcode
 import utime
 from picographics import (
-    DISPLAY_PICO_DISPLAY,
+    # DISPLAY_PICO_DISPLAY,
     DISPLAY_PICO_DISPLAY_2,
     PEN_P4,
     PicoGraphics,
@@ -105,7 +105,7 @@ temp_id = 0
 onewire_sensors = 0
 
 # TODO make this variable dynamic according to the number of sensors connected
-temperature_matrix = [[], [], []]
+temperature_matrix = [[], [], []]  # type: list[list[float]]
 
 in_use = False
 temp_x_pos = TEMP_X
@@ -114,6 +114,8 @@ info_x_pos = INFO_X
 
 t = 0
 current_screen = 0
+
+last_press_time = 0
 
 
 # Utility functions
@@ -300,32 +302,65 @@ button_x = machine.Pin(14, machine.Pin.IN, machine.Pin.PULL_UP)
 button_y = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)
 
 
+# def int_a(pin):
+#     global in_use
+#     global current_screen
+
+#     button_a.irq(handler=None)
+#     # state = machine.disable_irq()
+
+#     print("Interrupted (A)")
+#     if not in_use and current_screen != 0:
+#         current_screen = 0
+#     else:
+#         current_screen = (current_screen + 1) % len(SCREENS)
+
+#     in_use = True
+#     timer.init(
+#         freq=(1 / USE_TIMEOUT),
+#         mode=machine.Timer.PERIODIC,
+#         callback=set_in_use,
+#     )
+
+#     display.remove_clip()
+#     display_clear()
+
+#     utime.sleep(BUTTON_DEBOUNCE_TIME)
+#     button_a.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_a)
+#     # machine.enable_irq(state)
+
+
 def int_a(pin):
     global in_use
     global current_screen
+    global last_press_time
 
-    button_a.irq(handler=None)
+    # button_a.irq(handler=None)
     # state = machine.disable_irq()
 
-    print("Interrupted (A)")
-    if not in_use and current_screen != 0:
-        current_screen = 0
-    else:
-        current_screen = (current_screen + 1) % len(SCREENS)
+    new_press_time = utime.ticks_ms()
+    if (new_press_time - last_press_time) > (BUTTON_DEBOUNCE_TIME * 1000):
 
-    in_use = True
-    timer.init(
-        freq=(1 / USE_TIMEOUT),
-        mode=machine.Timer.PERIODIC,
-        callback=set_in_use,
-    )
+        print("Interrupted (A)")
+        if not in_use and current_screen != 0:
+            current_screen = 0
+        else:
+            current_screen = (current_screen + 1) % len(SCREENS)
 
-    display.remove_clip()
-    display_clear()
+        in_use = True
+        timer.init(
+            freq=(1 / USE_TIMEOUT),
+            mode=machine.Timer.PERIODIC,
+            callback=set_in_use,
+        )
 
-    utime.sleep(BUTTON_DEBOUNCE_TIME)
-    button_a.irq(handler=int_a)
-    # machine.enable_irq(state)
+        display.remove_clip()
+        display_clear()
+
+        # utime.sleep(BUTTON_DEBOUNCE_TIME)
+        # button_a.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_a)
+        # machine.enable_irq(state)
+        last_press_time = utime.ticks_ms()
 
 
 def int_b(pin):
@@ -334,65 +369,70 @@ def int_b(pin):
     global SPLIT_BARS
     global info_x_pos
     global LAYOUT_PEN_ID
+    global last_press_time
 
-    button_b.irq(handler=None)
+    # button_b.irq(handler=None)
 
-    print("Interrupted (B)")
-    set_in_use(in_use)
+    new_press_time = utime.ticks_ms()
+    if (new_press_time - last_press_time) > (BUTTON_DEBOUNCE_TIME * 1000):
 
-    print("Used memory before cleanup: ", gc.mem_alloc())
-    print("Available memory before cleanup: ", gc.mem_free())
-    gc.collect()
-    print("Used memory before cleanup: ", gc.mem_alloc())
-    print("Available memory after cleanup: ", gc.mem_free())
-    gc.collect()
+        print("Interrupted (B)")
+        set_in_use(in_use)
 
-    if not button_y.value():
-        info_x_pos = INFO_X
-        SPLIT_BARS = not SPLIT_BARS
+        print("Used memory before cleanup: ", gc.mem_alloc())
+        print("Available memory before cleanup: ", gc.mem_free())
+        gc.collect()
+        print("Used memory before cleanup: ", gc.mem_alloc())
+        print("Available memory after cleanup: ", gc.mem_free())
+        gc.collect()
 
-        display.remove_clip()
-        display_clear()
+        if not button_y.value():
+            info_x_pos = INFO_X
+            SPLIT_BARS = not SPLIT_BARS
 
-        while not button_y.value():
-            if info_x_pos < INFO_X_MIN:
-                info_x_pos = INFO_X
-            else:
-                info_x_pos += INFO_X_SCROLL
-
+            display.remove_clip()
             display_clear()
-            display.set_pen(greenPen)
-            # display.text(INFO_TEXT, info_x_pos, 8, 10000, 16)
 
-            draw_qr_code(left, top, max_size, code)
+            while not button_y.value():
+                if info_x_pos < INFO_X_MIN:
+                    info_x_pos = INFO_X
+                else:
+                    info_x_pos += INFO_X_SCROLL
 
-            display.update()
+                display_clear()
+                display.set_pen(greenPen)
+                # display.text(INFO_TEXT, info_x_pos, 8, 10000, 16)
 
-            utime.sleep(INFO_SCROLL_DELAY)
+                draw_qr_code(left, top, max_size, code)
 
-    if not button_x.value():
-        if current_screen == 0:
-            LAYOUT_PEN_ID = (LAYOUT_PEN_ID + 1) % len(pens)
+                display.update()
 
-        elif current_screen == 5:
-            # TODO Debouncing might cause the config file overwriting
-            # once again after initialisation
-            [
-                LAYOUT_PEN_ID,
-                RPM_LAYOUT_ID,
-                SPLIT_BARS,
-                LARGE_BATTERY,
-                BATTERY_ICON_DISCRETE,
-                BV,
-            ] = pmdenv.initialise_state(STATE_FILE)
-            blink_led(0.2, 0, 255, 255)
+                utime.sleep(INFO_SCROLL_DELAY)
 
-    else:
-        BV = (BV + 1) % len(BACKLIGHT_VALUES)
-        display.set_backlight(BACKLIGHT_VALUES[BV])
+        if not button_x.value():
+            if current_screen == 0:
+                LAYOUT_PEN_ID = (LAYOUT_PEN_ID + 1) % len(pens)
 
-    utime.sleep(BUTTON_DEBOUNCE_TIME)
-    button_b.irq(handler=int_b)
+            elif current_screen == 5:
+                # TODO Debouncing might cause the config file overwriting
+                # once again after initialisation
+                [
+                    LAYOUT_PEN_ID,
+                    RPM_LAYOUT_ID,
+                    SPLIT_BARS,
+                    LARGE_BATTERY,
+                    BATTERY_ICON_DISCRETE,
+                    BV,
+                ] = pmdenv.initialise_state(STATE_FILE)
+                blink_led(0.2, 0, 255, 255)
+
+        else:
+            BV = (BV + 1) % len(BACKLIGHT_VALUES)
+            display.set_backlight(BACKLIGHT_VALUES[BV])
+
+        # utime.sleep(BUTTON_DEBOUNCE_TIME)
+        # button_b.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_b)
+        last_press_time = utime.ticks_ms()
 
 
 def int_x(pin):
@@ -402,42 +442,47 @@ def int_x(pin):
     global temp_x_shift
     global BATTERY_ICON_DISCRETE
     global RPM_LAYOUT_ID
+    global last_press_time
 
-    button_x.irq(handler=None)
+    # button_x.irq(handler=None)
 
-    print("Interrupted (X)")
-    set_in_use(in_use)
+    new_press_time = utime.ticks_ms()
+    if (new_press_time - last_press_time) > (BUTTON_DEBOUNCE_TIME * 1000):
 
-    if current_screen == 0:
-        if temp_x_shift == 0:
-            temp_x_shift = TEMP_X_SCROLL
-        else:
-            temp_x_shift = 0
-            temp_x_pos = TEMP_X
+        print("Interrupted (X)")
+        set_in_use(in_use)
 
-    elif current_screen == 1:
-        BATTERY_ICON_DISCRETE = not BATTERY_ICON_DISCRETE
+        if current_screen == 0:
+            if temp_x_shift == 0:
+                temp_x_shift = TEMP_X_SCROLL
+            else:
+                temp_x_shift = 0
+                temp_x_pos = TEMP_X
 
-    elif current_screen == 3:
-        temp_id = (temp_id + 1) % (1 + onewire_sensors)
+        elif current_screen == 1:
+            BATTERY_ICON_DISCRETE = not BATTERY_ICON_DISCRETE
 
-    elif current_screen == 4:
-        RPM_LAYOUT_ID = (RPM_LAYOUT_ID + 1) % 5
+        elif current_screen == 3:
+            temp_id = (temp_id + 1) % (1 + onewire_sensors)
 
-    elif current_screen == 5:
-        pmdenv.write_state(
-            STATE_FILE,
-            LAYOUT_PEN_ID,
-            RPM_LAYOUT_ID,
-            SPLIT_BARS,
-            LARGE_BATTERY,
-            BATTERY_ICON_DISCRETE,
-            BV,
-        )
-        blink_led(0.2, 0, 0, 255)
+        elif current_screen == 4:
+            RPM_LAYOUT_ID = (RPM_LAYOUT_ID + 1) % 5
 
-    utime.sleep(BUTTON_DEBOUNCE_TIME)
-    button_x.irq(handler=int_x)
+        elif current_screen == 5:
+            pmdenv.write_state(
+                STATE_FILE,
+                LAYOUT_PEN_ID,
+                RPM_LAYOUT_ID,
+                SPLIT_BARS,
+                LARGE_BATTERY,
+                BATTERY_ICON_DISCRETE,
+                BV,
+            )
+            blink_led(0.2, 0, 0, 255)
+
+        # utime.sleep(BUTTON_DEBOUNCE_TIME)
+        # button_x.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_x)
+        last_press_time = utime.ticks_ms()
 
 
 def int_y(pin):
@@ -447,29 +492,34 @@ def int_y(pin):
     global LARGE_BATTERY
     global start_time
     global temperature_matrix
+    global last_press_time
 
-    button_y.irq(handler=None)
+    # button_y.irq(handler=None)
 
-    print("Interrupted (Y)")
-    set_in_use(in_use)
+    new_press_time = utime.ticks_ms()
+    if (new_press_time - last_press_time) > (BUTTON_DEBOUNCE_TIME * 1000):
 
-    if current_screen in [0, 2, 4]:
-        if onewire_sensors == 0 or temp_x_shift != 0:
-            SPLIT_BARS = not SPLIT_BARS
-        else:
-            temp_id = (temp_id + 1) % (1 + onewire_sensors)
+        print("Interrupted (Y)")
+        set_in_use(in_use)
 
-    elif current_screen == 1:
-        LARGE_BATTERY = not LARGE_BATTERY
+        if current_screen in [0, 2, 4]:
+            if onewire_sensors == 0 or temp_x_shift != 0:
+                SPLIT_BARS = not SPLIT_BARS
+            else:
+                temp_id = (temp_id + 1) % (1 + onewire_sensors)
 
-    elif current_screen == 3:
-        temperature_matrix[temp_id] = []
+        elif current_screen == 1:
+            LARGE_BATTERY = not LARGE_BATTERY
 
-    elif current_screen == 5:
-        start_time = utime.time()
+        elif current_screen == 3:
+            temperature_matrix[temp_id] = []
 
-    utime.sleep(BUTTON_DEBOUNCE_TIME)
-    button_y.irq(handler=int_y)
+        elif current_screen == 5:
+            start_time = utime.time()
+
+        # utime.sleep(BUTTON_DEBOUNCE_TIME)
+        # button_y.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_y)
+        last_press_time = utime.ticks_ms()
 
 
 button_a.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_a)
