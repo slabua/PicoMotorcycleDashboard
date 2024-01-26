@@ -10,10 +10,10 @@ __maintainer__ = "Salvatore La Bua"
 __email__ = "slabua@gmail.com"
 __status__ = "Development"
 
+import _thread
 import gc
 import math
 
-import _thread
 import ds18x20
 import machine
 import onewire
