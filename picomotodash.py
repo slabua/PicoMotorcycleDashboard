@@ -5,7 +5,7 @@
 __author__ = "Salvatore La Bua"
 __copyright__ = "Copyright 2021, Salvatore La Bua"
 __license__ = "GPL"
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 __maintainer__ = "Salvatore La Bua"
 __email__ = "slabua@gmail.com"
 __status__ = "Development"
@@ -13,6 +13,7 @@ __status__ = "Development"
 import gc
 import math
 
+import _thread
 import ds18x20
 import machine
 import onewire
@@ -29,11 +30,6 @@ from pimoroni import RGBLED
 
 gc.enable()
 gc.threshold(100000)
-
-
-# Timer
-timer = machine.Timer()
-start_time = utime.time()
 
 
 # Parameters
@@ -66,6 +62,7 @@ INFO_X_SCROLL = -10
 INFO_SCROLL_DELAY = 0.01
 INFO_TEXT = "Salvatore La Bua - http://twitter.com/slabua"
 QR_URL = "http://twitter.com/slabua"
+PWM2RPM_FACTOR = 10
 
 BACKLIGHT_VALUES = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 BV = 7
@@ -79,7 +76,6 @@ SCREENS = [
     "RPM",
     "STATS",
 ]
-
 
 # Variables initialisation
 [
@@ -116,6 +112,42 @@ t = 0
 current_screen = 0
 
 last_press_time = 0
+
+# Timer
+timer = machine.Timer()
+start_time = utime.time()
+
+
+# Thread
+RPM_ESTIMATE = 0
+
+
+def thread1(PWM2RPM_FACTOR):
+    global RPM_ESTIMATE
+    n_repeats = 1
+
+    while True:
+        if pwm0.value() == 1:
+            cycle_start = utime.ticks_us()
+            for _ in range(n_repeats):
+                while pwm0.value() == 1:
+                    # pass
+                    utime.sleep_us(100)
+                while pwm0.value() == 0:
+                    # pass
+                    utime.sleep_us(100)
+            cycle_stop = utime.ticks_us()
+            cycle_duration = cycle_stop - cycle_start
+            cycle = 1000000 / (cycle_duration / n_repeats)
+            repeat_factor = ((50 - 20) / (1500 - 150)) * cycle + (  # y = mx + q
+                50 - ((50 - 20) / (1500 - 150) * 1500)
+            )
+            n_repeats = (
+                int((cycle) / repeat_factor) if int((cycle) / repeat_factor) != 0 else 1
+            )
+            RPM_ESTIMATE = cycle * PWM2RPM_FACTOR
+
+            # print("RPM: {:.2f}".format(RPM_ESTIMATE), n_repeats, repeat_factor)
 
 
 # Utility functions
@@ -217,6 +249,13 @@ roms = ds_scan_roms(ds_sensor, DS_RESOLUTION)
 adc0 = machine.ADC(machine.Pin(26, machine.Pin.IN))  # Battery adc
 adc1 = machine.ADC(machine.Pin(27, machine.Pin.IN))  # Fuel adc
 adc2 = machine.ADC(machine.Pin(28, machine.Pin.IN))  # RPM adc
+
+# TEST
+pwm1 = machine.PWM(machine.Pin(0))
+pwm1.freq(275)
+pwm1.duty_u16(32768)
+###
+pwm0 = machine.Pin(22, machine.Pin.IN, machine.Pin.PULL_DOWN)  # RPM pwm
 
 
 # Pico Display boilerplate
@@ -340,7 +379,6 @@ def int_a(pin):
 
     new_press_time = utime.ticks_ms()
     if (new_press_time - last_press_time) > (BUTTON_DEBOUNCE_TIME * 1000):
-
         print("Interrupted (A)")
         if not in_use and current_screen != 0:
             current_screen = 0
@@ -375,7 +413,6 @@ def int_b(pin):
 
     new_press_time = utime.ticks_ms()
     if (new_press_time - last_press_time) > (BUTTON_DEBOUNCE_TIME * 1000):
-
         print("Interrupted (B)")
         set_in_use(in_use)
 
@@ -448,7 +485,6 @@ def int_x(pin):
 
     new_press_time = utime.ticks_ms()
     if (new_press_time - last_press_time) > (BUTTON_DEBOUNCE_TIME * 1000):
-
         print("Interrupted (X)")
         set_in_use(in_use)
 
@@ -498,7 +534,6 @@ def int_y(pin):
 
     new_press_time = utime.ticks_ms()
     if (new_press_time - last_press_time) > (BUTTON_DEBOUNCE_TIME * 1000):
-
         print("Interrupted (Y)")
         set_in_use(in_use)
 
@@ -656,7 +691,8 @@ def draw_home_temperature():
 
 
 def draw_home_rpm():
-    reading = scale_value(acq_adc(adc2), 0, RPM_MAX, 65535)
+    # reading = scale_value(acq_adc(adc2), 0, RPM_MAX, 65535)
+    reading = RPM_ESTIMATE
 
     at_redline_width = round((width - 100 - CLIP_MARGIN) * RPM_REDLINE / RPM_MAX)
     rpm_width = round((width - 100 - CLIP_MARGIN) * reading / RPM_MAX)
@@ -920,8 +956,10 @@ def screen_temperature():
 def screen_rpm():
     display_clear()
 
-    reading = scale_value(acq_adc(adc2), 0, RPM_MAX, 65535)
-    print("ADC2: " + str(reading))
+    # reading = scale_value(acq_adc(adc2), 0, RPM_MAX, 65535)
+    # print("ADC2: " + str(reading))
+    reading = RPM_ESTIMATE
+    print("PWM0: " + str(reading))
 
     at_redline_width = round(width * RPM_REDLINE / RPM_MAX)
     rpm_width = round(width * reading / RPM_MAX)
@@ -1075,6 +1113,8 @@ gc.collect()
 
 # Main
 spinner = "-\|/"
+
+_thread.start_new_thread(thread1, [PWM2RPM_FACTOR])
 
 
 while True:
