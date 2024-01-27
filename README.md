@@ -26,10 +26,10 @@
 
 ## Wiring Diagram
 ### Breadboard - Full diagram
-![Breadboard](https://lh3.googleusercontent.com/pw/AM-JKLXL85_Idbb3gWbf9R2kGnM6V2rCgni5Bkqi5iXfEr17kTAaiILxOcSAr_75dyG5yG6MaF1wZdk9zgJaEIjLYNVVo-oQGpdGmY1BgSLjT5BdzeRqhGC0syIUG0vCKQ-imdqL0K-JVeibcEyUr8TJiZcICQ=w800-no)
+![Breadboard](https://github.com/slabua/PicoMotorcycleDashboard/assets/1002978/8415ca15-757f-420d-b604-311a1df7ca19)
 
 ### Breadboard - Display directly mounted on the back of the Pico (not shown)
-![Breadboard](https://lh3.googleusercontent.com/pw/AM-JKLXWoQoD3HZGN70OeTc5_Na8nTq_L9OXpzibpURABGSUnXlKnmc6hwwnwCy0SY2BShxQEjVEbhL1lXR4hClP1XQTbvh8qdTayrBOYNnw01wWPMPRMJ5bonOsW2U9a5SRWykPReBykW9vxZG9WMsQD7OGFw=w800-no)
+![Breadboard](https://github.com/slabua/PicoMotorcycleDashboard/assets/1002978/5274b71b-ec71-43a6-bc7f-e2692a153fc1)
 
 ---
 ## Usage
