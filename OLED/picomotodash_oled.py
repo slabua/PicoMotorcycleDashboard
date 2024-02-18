@@ -61,8 +61,8 @@ HEADING = 0
 labels = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"]
 
 
-def calculate_heading(x, y):
-    global HEADING
+def calculate_heading():
+    x, y, _ = read_mpu()
 
     # Calculate heading in radians
     heading_rad = math.atan2(y, x)
@@ -74,7 +74,7 @@ def calculate_heading(x, y):
     heading_deg = 90 - heading_deg
 
     # Adjust for negative values
-    HEADING = (heading_deg + 360) % 360
+    return (heading_deg + 360) % 360
 
 
 def moving_avg(n):
@@ -577,9 +577,7 @@ try:
             # sleep(0.1)
             # read_gps()
 
-            xx, yy, zz = read_mpu()
-            # print("Scaled:      X = %d , Y = %d" %(xx,yy))
-            calculate_heading(xx, yy)
+            HEADING = calculate_heading()
             HEADING = moving_avg(9)
 
             # print(key0.value(), key1.value())
