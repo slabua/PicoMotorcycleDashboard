@@ -580,7 +580,7 @@ try:
             xx, yy, zz = read_mpu()
             # print("Scaled:      X = %d , Y = %d" %(xx,yy))
             calculate_heading(xx, yy)
-            moving_avg(9)
+            HEADING = moving_avg(9)
 
             # print(key0.value(), key1.value())
 
