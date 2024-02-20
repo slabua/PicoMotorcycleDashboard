@@ -558,7 +558,7 @@ def thread1(PWM2RPM_FACTOR):
             # print("RPM: {:.2f}".format(RPM_ESTIMATE), n_repeats, repeat_factor)
 
 
-# show_logo()
+show_logo()
 
 gc.collect()
 
