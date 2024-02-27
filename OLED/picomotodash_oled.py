@@ -194,15 +194,17 @@ def show_logo():
             display.line(0, r + 1, 127 - c, r + 1, 0)
         display.show()
 
-    for x in range(2, 14, 2):  # 34
+    delay = 0.0000001
+    for x in range(2, 33, 2):  # 34
         display.fill(0)
-        sleep(0.05)
+        delay = delay**0.88
         display.blit(fbuf_C, x_C, 0)
-        display.blit(fbuf_L, round(x_L - x**1.4), 0)
-        display.blit(fbuf_R, round(x_R + x**1.4), 0)
+        display.blit(fbuf_L, round(x_L - x), 0)
+        display.blit(fbuf_R, round(x_R + x), 0)
         # display.text("Loading...", 26, 30, 1)
         # display.text("Loading...", 25, 29, 0)
         display.show()
+        sleep(delay)
 
     display.fill_rect(26, 30, 77, 8, 0)
     display.fill_rect(28, 30, 4, 8, 1)
