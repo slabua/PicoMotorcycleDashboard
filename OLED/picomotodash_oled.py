@@ -530,16 +530,19 @@ def thread1(PWM2RPM_FACTOR):
     while True:
         read_gps()
 
+        durations = []
         if pwm22.value() == 1:
             cycle_start = ticks_us()
             for _ in range(n_repeats):
                 count = 0
+                d_start = ticks_us()
                 while pwm22.value() == 1:
                     count += 1
                     sleep_us(100)
                     if count > 1000:
                         decrease_rpm()
                         break
+                durations.append(ticks_us() - d_start)
                 while pwm22.value() == 0:
                     count += 1
                     sleep_us(100)
@@ -548,14 +551,18 @@ def thread1(PWM2RPM_FACTOR):
                         break
             cycle_stop = ticks_us()
             cycle_duration = cycle_stop - cycle_start
-            cycle = 1000000 / (cycle_duration / n_repeats)
-            repeat_factor = ((50 - 20) / (1500 - 150)) * cycle + (  # y = mx + q
+            cycle_avg = cycle_duration / n_repeats
+            freq = 1000000 / cycle_avg
+            duration_avg = sum(durations) / len(durations)
+
+            repeat_factor = ((50 - 20) / (1500 - 150)) * freq + (  # y = mx + q
                 50 - ((50 - 20) / (1500 - 150) * 1500)
             )
             n_repeats = (
-                int((cycle) / repeat_factor) if int((cycle) / repeat_factor) != 0 else 1
+                int((freq) / repeat_factor) if int((freq) / repeat_factor) != 0 else 1
             )
-            RPM_ESTIMATE = cycle * PWM2RPM_FACTOR
+            duty = (duration_avg / cycle_avg) * 100
+            RPM_ESTIMATE = freq * PWM2RPM_FACTOR
 
             # print("RPM: {:.2f}".format(RPM_ESTIMATE), n_repeats, repeat_factor)
 
