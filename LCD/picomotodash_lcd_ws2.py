@@ -261,13 +261,13 @@ pwm0 = machine.Pin(22, machine.Pin.IN, machine.Pin.PULL_DOWN)  # RPM pwm
 
 
 # Pico Display boilerplate
-# bl = machine.Pin(13,machine.Pin.OUT,value=1)
-rst = machine.Pin(12, machine.Pin.OUT, value=1)
 spibus = SPIBus(cs=9, dc=8, sck=10, mosi=11)
-
+rst = machine.Pin(12, machine.Pin.OUT, value=1)
+bl = machine.Pin(13, machine.Pin.OUT, value=1)
 display = PicoGraphics(
     display=DISPLAY_PICO_DISPLAY_2, bus=spibus, rotate=180, pen_type=PEN_P4
 )
+
 width, height = display.get_bounds()
 w_factor = width / 240
 h_factor = height / 135
