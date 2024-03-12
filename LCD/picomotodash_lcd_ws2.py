@@ -15,16 +15,30 @@ import gc
 import math
 
 import ds18x20
-import machine
 import onewire
 import picomotodash_env as pmdenv
 import qrcode
-import utime
+from machine import (
+    ADC,
+    Pin,
+    PWM,
+    Timer,
+    # enable_irq,
+    # disable_irq,
+)
 from picographics import (
     # DISPLAY_PICO_DISPLAY,
     DISPLAY_PICO_DISPLAY_2,
     PEN_P4,
     PicoGraphics,
+)
+from utime import (
+    sleep,
+    sleep_ms,
+    sleep_us,
+    ticks_ms,
+    ticks_us,
+    time,
 )
 
 # from pimoroni import RGBLED
@@ -116,8 +130,8 @@ current_screen = 0
 last_press_time = 0
 
 # Timer
-timer = machine.Timer()
-start_time = utime.time()
+timer = Timer()
+start_time = time()
 
 
 # Thread
@@ -129,16 +143,16 @@ def thread1(PWM2RPM_FACTOR):
     n_repeats = 1
 
     while True:
-        if pwm0.value() == 1:
-            cycle_start = utime.ticks_us()
+        if pwm22.value() == 1:
+            cycle_start = ticks_us()
             for _ in range(n_repeats):
-                while pwm0.value() == 1:
+                while pwm22.value() == 1:
                     # pass
-                    utime.sleep_us(100)
-                while pwm0.value() == 0:
+                    sleep_us(100)
+                while pwm22.value() == 0:
                     # pass
-                    utime.sleep_us(100)
-            cycle_stop = utime.ticks_us()
+                    sleep_us(100)
+            cycle_stop = ticks_us()
             cycle_duration = cycle_stop - cycle_start
             cycle = 1000000 / (cycle_duration / n_repeats)
             repeat_factor = ((50 - 20) / (1500 - 150)) * cycle + (  # y = mx + q
@@ -171,7 +185,7 @@ def in_use_led(in_use):
 
 def blink_led(duration, r, g, b):
     led.set_rgb(r, g, b)
-    utime.sleep(duration)
+    sleep(duration)
     led.set_rgb(0, 0, 0)
 
 
@@ -242,28 +256,28 @@ def draw_qr_code(ox, oy, size, code):
 
 
 # GPIO
-temp_builtin = machine.ADC(4)  # Built-in temperature sensor
+temp_builtin = ADC(4)  # Built-in temperature sensor
 
-ds_pin = machine.Pin(1)  # 1-Wire temperature sensors
+ds_pin = Pin(1)  # 1-Wire temperature sensors
 ds_sensor = ds18x20.DS18X20(onewire.OneWire(ds_pin))
 roms = ds_scan_roms(ds_sensor, DS_RESOLUTION)
 
-adc0 = machine.ADC(machine.Pin(26, machine.Pin.IN))  # Battery adc
-adc1 = machine.ADC(machine.Pin(27, machine.Pin.IN))  # Fuel adc
-adc2 = machine.ADC(machine.Pin(28, machine.Pin.IN))  # RPM adc
+adc0 = ADC(Pin(26, Pin.IN))  # Battery adc
+adc1 = ADC(Pin(27, Pin.IN))  # Fuel adc
+adc2 = ADC(Pin(28, Pin.IN))  # RPM adc
 
 # TEST
-pwm1 = machine.PWM(machine.Pin(0))
-pwm1.freq(275)
-pwm1.duty_u16(32768)
+pwm0 = PWM(Pin(0))
+pwm0.freq(275)
+pwm0.duty_u16(32768)
 ###
-pwm0 = machine.Pin(22, machine.Pin.IN, machine.Pin.PULL_DOWN)  # RPM pwm
+pwm22 = Pin(22, Pin.IN, Pin.PULL_DOWN)  # RPM pwm
 
 
 # Pico Display boilerplate
 spibus = SPIBus(cs=9, dc=8, sck=10, mosi=11)
-rst = machine.Pin(12, machine.Pin.OUT, value=1)
-bl = machine.Pin(13, machine.Pin.OUT, value=1)
+rst = Pin(12, Pin.OUT, value=1)
+bl = Pin(13, Pin.OUT, value=1)
 display = PicoGraphics(
     display=DISPLAY_PICO_DISPLAY_2, bus=spibus, rotate=180, pen_type=PEN_P4
 )
@@ -296,7 +310,7 @@ if USE_BG_IMAGE and width == 240:  # TODO check
     j.decode(0, 0, jpegdec.JPEG_SCALE_FULL, dither=False)
 
     display.update()
-    utime.sleep(2)
+    sleep(2)
     # TODO check
     # j.open_file(BG_IMAGES[1])
 
@@ -350,10 +364,10 @@ gc.collect()
 
 
 # Buttons
-button_a = machine.Pin(2, machine.Pin.IN, machine.Pin.PULL_UP)
-button_b = machine.Pin(17, machine.Pin.IN, machine.Pin.PULL_UP)
-button_x = machine.Pin(3, machine.Pin.IN, machine.Pin.PULL_UP)
-button_y = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)
+button_a = Pin(2, Pin.IN, Pin.PULL_UP)
+button_b = Pin(17, Pin.IN, Pin.PULL_UP)
+button_x = Pin(3, Pin.IN, Pin.PULL_UP)
+button_y = Pin(15, Pin.IN, Pin.PULL_UP)
 
 
 # def int_a(pin):
@@ -361,7 +375,7 @@ button_y = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)
 #     global current_screen
 
 #     button_a.irq(handler=None)
-#     # state = machine.disable_irq()
+#     # state = disable_irq()
 
 #     print("Interrupted (A)")
 #     if not in_use and current_screen != 0:
@@ -372,16 +386,16 @@ button_y = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)
 #     in_use = True
 #     timer.init(
 #         freq=(1 / USE_TIMEOUT),
-#         mode=machine.Timer.PERIODIC,
+#         mode=Timer.PERIODIC,
 #         callback=set_in_use,
 #     )
 
 #     display.remove_clip()
 #     display_clear()
 
-#     utime.sleep(BUTTON_DEBOUNCE_TIME)
-#     button_a.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_a)
-#     # machine.enable_irq(state)
+#     sleep(BUTTON_DEBOUNCE_TIME)
+#     button_a.irq(trigger=Pin.IRQ_FALLING, handler=int_a)
+#     # enable_irq(state)
 
 
 def int_a(pin):
@@ -390,9 +404,9 @@ def int_a(pin):
     global last_press_time
 
     # button_a.irq(handler=None)
-    # state = machine.disable_irq()
+    # state = disable_irq()
 
-    new_press_time = utime.ticks_ms()
+    new_press_time = ticks_ms()
     if (new_press_time - last_press_time) > (BUTTON_DEBOUNCE_TIME * 1000):
         print("Interrupted (A)")
         if not in_use and current_screen != 0:
@@ -403,17 +417,17 @@ def int_a(pin):
         in_use = True
         timer.init(
             freq=(1 / USE_TIMEOUT),
-            mode=machine.Timer.PERIODIC,
+            mode=Timer.PERIODIC,
             callback=set_in_use,
         )
 
         display.remove_clip()
         display_clear()
 
-        # utime.sleep(BUTTON_DEBOUNCE_TIME)
-        # button_a.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_a)
-        # machine.enable_irq(state)
-        last_press_time = utime.ticks_ms()
+        # sleep(BUTTON_DEBOUNCE_TIME)
+        # button_a.irq(trigger=Pin.IRQ_FALLING, handler=int_a)
+        # enable_irq(state)
+        last_press_time = ticks_ms()
 
 
 def int_b(pin):
@@ -426,7 +440,7 @@ def int_b(pin):
 
     # button_b.irq(handler=None)
 
-    new_press_time = utime.ticks_ms()
+    new_press_time = ticks_ms()
     if (new_press_time - last_press_time) > (BUTTON_DEBOUNCE_TIME * 1000):
         print("Interrupted (B)")
         set_in_use(in_use)
@@ -459,7 +473,7 @@ def int_b(pin):
 
                 display.update()
 
-                utime.sleep(INFO_SCROLL_DELAY)
+                sleep(INFO_SCROLL_DELAY)
 
         if not button_x.value():
             if current_screen == 0:
@@ -482,9 +496,9 @@ def int_b(pin):
             BV = (BV + 1) % len(BACKLIGHT_VALUES)
             display.set_backlight(BACKLIGHT_VALUES[BV])
 
-        # utime.sleep(BUTTON_DEBOUNCE_TIME)
-        # button_b.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_b)
-        last_press_time = utime.ticks_ms()
+        # sleep(BUTTON_DEBOUNCE_TIME)
+        # button_b.irq(trigger=Pin.IRQ_FALLING, handler=int_b)
+        last_press_time = ticks_ms()
 
 
 def int_x(pin):
@@ -498,7 +512,7 @@ def int_x(pin):
 
     # button_x.irq(handler=None)
 
-    new_press_time = utime.ticks_ms()
+    new_press_time = ticks_ms()
     if (new_press_time - last_press_time) > (BUTTON_DEBOUNCE_TIME * 1000):
         print("Interrupted (X)")
         set_in_use(in_use)
@@ -531,9 +545,9 @@ def int_x(pin):
             )
             blink_led(0.2, 0, 0, 255)
 
-        # utime.sleep(BUTTON_DEBOUNCE_TIME)
-        # button_x.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_x)
-        last_press_time = utime.ticks_ms()
+        # sleep(BUTTON_DEBOUNCE_TIME)
+        # button_x.irq(trigger=Pin.IRQ_FALLING, handler=int_x)
+        last_press_time = ticks_ms()
 
 
 def int_y(pin):
@@ -547,7 +561,7 @@ def int_y(pin):
 
     # button_y.irq(handler=None)
 
-    new_press_time = utime.ticks_ms()
+    new_press_time = ticks_ms()
     if (new_press_time - last_press_time) > (BUTTON_DEBOUNCE_TIME * 1000):
         print("Interrupted (Y)")
         set_in_use(in_use)
@@ -565,17 +579,17 @@ def int_y(pin):
             temperature_matrix[temp_id] = []
 
         elif current_screen == 5:
-            start_time = utime.time()
+            start_time = time()
 
-        # utime.sleep(BUTTON_DEBOUNCE_TIME)
-        # button_y.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_y)
-        last_press_time = utime.ticks_ms()
+        # sleep(BUTTON_DEBOUNCE_TIME)
+        # button_y.irq(trigger=Pin.IRQ_FALLING, handler=int_y)
+        last_press_time = ticks_ms()
 
 
-button_a.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_a)
-button_b.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_b)
-button_x.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_x)
-button_y.irq(trigger=machine.Pin.IRQ_FALLING, handler=int_y)
+button_a.irq(trigger=Pin.IRQ_FALLING, handler=int_a)
+button_b.irq(trigger=Pin.IRQ_FALLING, handler=int_b)
+button_x.irq(trigger=Pin.IRQ_FALLING, handler=int_x)
+button_y.irq(trigger=Pin.IRQ_FALLING, handler=int_y)
 
 
 # Interface
@@ -927,7 +941,7 @@ def screen_temperature():
     temperatures = []
     if onewire_sensors:
         ds_sensor.convert_temp()
-    utime.sleep_ms(round(750 / (2 ** (12 - DS_RESOLUTION))))
+    sleep_ms(round(750 / (2 ** (12 - DS_RESOLUTION))))
     temperatures.append(acq_temp(temp_builtin))
     for ows in range(onewire_sensors):
         temperatures.append(ds_sensor.read_temp(roms[ows]))
@@ -1102,7 +1116,7 @@ def screen_rpm():
 def screen_stats():
     display_clear()
 
-    uptime = utime.time() - start_time
+    uptime = time() - start_time
     print("Uptime: " + str(uptime))
 
     display.set_pen(whitePen)
@@ -1133,7 +1147,7 @@ _thread.start_new_thread(thread1, [PWM2RPM_FACTOR])
 
 
 while True:
-    utime.sleep(UPDATE_INTERVAL)
+    sleep(UPDATE_INTERVAL)
 
     # in_use_led(in_use)
 
@@ -1155,4 +1169,4 @@ while True:
 
     screen_functions[current_screen]()
 
-    utime.sleep(UPDATE_INTERVAL)
+    sleep(UPDATE_INTERVAL)
