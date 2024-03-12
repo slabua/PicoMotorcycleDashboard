@@ -215,11 +215,11 @@ def set_temperature_pen(reading):
 
 def set_battery_pen(reading):
     if reading < BATTERY_TH[0]:
-        display.set_pen(customPen255010010)
+        display.set_pen(custom_pens[1])
     elif reading >= BATTERY_TH[0] and reading < BATTERY_TH[1]:
-        display.set_pen(customPen255128010)
+        display.set_pen(custom_pens[2])
     else:
-        display.set_pen(customPen010255010)
+        display.set_pen(custom_pens[3])
 
 
 def measure_qr_code(size, code):
@@ -322,6 +322,13 @@ pens = [
     magentaPen,
     yellowPen,
     blackPen,
+]
+
+custom_pens = [
+    customPen255196000,
+    customPen255010010,
+    customPen255128010,
+    customPen010255010,
 ]
 
 
@@ -602,7 +609,7 @@ def draw_home_fuel():
     if reading < FUEL_RESERVE:
         display.set_pen(redPen)
     else:
-        display.set_pen(customPen255196000)
+        display.set_pen(custom_pens[0])
 
     display.rectangle(
         100,
@@ -877,7 +884,7 @@ def screen_fuel():
     if reading < FUEL_RESERVE:
         display.set_pen(redPen)
     else:
-        display.set_pen(customPen255196000)
+        display.set_pen(custom_pens[0])
 
     display.rectangle(
         0,
