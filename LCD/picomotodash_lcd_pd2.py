@@ -18,16 +18,9 @@ import ds18x20
 import onewire
 import picomotodash_env as pmdenv
 import qrcode
-from machine import (
-    ADC,
-    Pin,
-    PWM,
-    Timer,
-    # enable_irq,
-    # disable_irq,
-)
+from machine import ADC, Pin, PWM, Timer  # enable_irq,; disable_irq,
+
 from picographics import (
-    # DISPLAY_PICO_DISPLAY,
     DISPLAY_PICO_DISPLAY_2,
     PEN_P4,
     PicoGraphics,
