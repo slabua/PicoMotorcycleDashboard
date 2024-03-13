@@ -169,17 +169,17 @@ def set_in_use(_):
         print("Timeout released.")
 
 
-def in_use_led(in_use):
-    if in_use:
-        led.set_rgb(64, 0, 0)
-    else:
-        led.set_rgb(0, 0, 0)
+# def in_use_led(in_use):
+#     if in_use:
+#         led.set_rgb(64, 0, 0)
+#     else:
+#         led.set_rgb(0, 0, 0)
 
 
-def blink_led(duration, r, g, b):
-    led.set_rgb(r, g, b)
-    sleep(duration)
-    led.set_rgb(0, 0, 0)
+# def blink_led(duration, r, g, b):
+#     led.set_rgb(r, g, b)
+#     sleep(duration)
+#     led.set_rgb(0, 0, 0)
 
 
 def acq_adc(adc):
@@ -483,7 +483,7 @@ def int_b(pin):
                     BATTERY_ICON_DISCRETE,
                     BV,
                 ] = pmdenv.initialise_state(STATE_FILE)
-                blink_led(0.2, 0, 255, 255)
+                # blink_led(0.2, 0, 255, 255)
 
         else:
             BV = (BV + 1) % len(BACKLIGHT_VALUES)
@@ -536,7 +536,7 @@ def int_x(pin):
                 BATTERY_ICON_DISCRETE,
                 BV,
             )
-            blink_led(0.2, 0, 0, 255)
+            # blink_led(0.2, 0, 0, 255)
 
         # sleep(BUTTON_DEBOUNCE_TIME)
         # button_x.irq(trigger=Pin.IRQ_FALLING, handler=int_x)
