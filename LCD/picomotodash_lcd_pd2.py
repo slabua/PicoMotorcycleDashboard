@@ -256,7 +256,7 @@ def draw_qr_code(ox, oy, size, code):
 # GPIO
 temp_builtin = ADC(4)  # Built-in temperature sensor
 
-ds_pin = machine.Pin(11)  # 1-Wire temperature sensors
+ds_pin = Pin(11)  # 1-Wire temperature sensors
 ds_sensor = ds18x20.DS18X20(onewire.OneWire(ds_pin))
 roms = ds_scan_roms(ds_sensor, DS_RESOLUTION)
 
