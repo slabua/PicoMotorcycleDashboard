@@ -1,9 +1,9 @@
-# Pico Motorcycle Dashboard (DRAFT)
+# Pico Motorcycle Dashboard / Gauge
 [![License: GPLv3][GPLimg]][GPLurl]
 [![GitHub Tag][GHTimg]][GHTurl]
 
 - [LCD](./LCD/)
-  - A Motorcycle Dashboard based on the [Raspberry Pi Pico](https://www.raspberrypi.org/products/raspberry-pi-pico/) and the [Pimoroni Pico Display Pack](https://shop.pimoroni.com/products/pico-display-pack)
+  - A Motorcycle Dashboard based on the [Raspberry Pi Pico](https://www.raspberrypi.org/products/raspberry-pi-pico/) and LCD Displays
 - [OLED](./OLED/)
   - A Motorcycle Dashboard based on the [Raspberry Pi Pico](https://www.raspberrypi.org/products/raspberry-pi-pico/) with a OLED Display, Compass, GPS and more
 
