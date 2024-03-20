@@ -1148,7 +1148,7 @@ while True:
     if len(roms) != onewire_sensors:
         print("The number of connected 1-Wire devices has been updated.")
         onewire_sensors = len(roms)
-        blink_led(0.2, 255, 255, 0)
+        # blink_led(0.2, 255, 255, 0)
 
     if current_screen not in [0, 1, 2, 3, 4, 5]:
         display_clear()
