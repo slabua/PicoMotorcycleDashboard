@@ -6,10 +6,11 @@ __author__ = "Salvatore La Bua"
 
 
 from machine import I2C, Pin
-from math import atan2, copysign, sqrt
+from math import atan2, copysign, cos, sin, sqrt
+from mpu6500 import MPU6500
 from mpu9250 import MPU9250
 from ujson import dump, load
-from utime import sleep
+from utime import sleep, ticks_diff, ticks_us
 
 
 # MPU = 0x68
@@ -18,6 +19,7 @@ sda = Pin(6)
 scl = Pin(7)
 
 RAD2DEG = 180 / 3.1415
+DEG2RAD = 3.1415 / 180
 
 
 class MPU:
@@ -29,9 +31,10 @@ class MPU:
         print("Initialising MPU9250...")
 
         i2c = I2C(id=id, scl=scl, sda=sda, freq=freq)
-
         # print(i2c.scan())
-        self.mpu = MPU9250(i2c)
+
+        mpu6500 = MPU6500(i2c, accel_sf=1, gyro_sf=1)
+        self.mpu = MPU9250(i2c, mpu6500=mpu6500)
 
         print("Calibrating Magnetometer...")
         self.mpu.ak8963.calibrate(count=100)
@@ -40,8 +43,8 @@ class MPU:
         self.imu = []
 
         self.dt = 0
+        self.comp_pc = 0.99
         self.lowpass_pc = 0.8
-        # self.comp_pc = 0.99
 
         self.aXerr = 0
         self.aYerr = 0
@@ -50,18 +53,20 @@ class MPU:
         self.gYerr = 0
         self.gZerr = 0
 
-        # self.comp_roll = None
-        # self.comp_pitch = None
-        # self.gyro_roll = None
-        # self.gyro_pitch = None
-        # self.gyro_yaw = 0
+        self.gyro_roll = None
+        self.gyro_pitch = None
+        self.gyro_yaw = 0
 
         self.roll_bias = 0.0
         self.pitch_bias = 0.0
         self.roll = 0.0
         self.pitch = 0.0
-        self.comp_mx = 0.0
-        self.comp_my = 0.0
+        self.comp_roll = None
+        self.comp_pitch = None
+        self.lowpass_roll = None
+        self.lowpass_pitch = None
+        self.lowpass_mx = 0.0
+        self.lowpass_my = 0.0
         self.heading = 0
 
         # https://www.magnetic-declination.com/Japan/Kyoto/1340633.html
@@ -70,13 +75,13 @@ class MPU:
         if calib_ag:
             self.calib_ag()
 
+        self.start = ticks_us()
+
         self.imu = self.update()
         self.roll_bias = self.roll
         self.pitch_bias = self.pitch
 
-        # self.start = ticks_us()
-
-        print("MPU6050 Initialised.")
+        print("MPU9250 Initialised.")
 
     def calib_ag(self, period=0.02, n_samples=1000):
         print("Running Accel/Gyro Calibration...")
@@ -109,7 +114,7 @@ class MPU:
             self.gYerr /= n_samples
             self.gZerr /= n_samples
 
-            self.aZerr += 9.80665
+            self.aZerr += 1  # 9.80665
 
             print("Calibration errors:")
             print(
@@ -159,7 +164,7 @@ class MPU:
             dump(calib, calib_file)
         print("Calibration file written.")
 
-    def low_pass(self, alpha, new_value: float, old_value):
+    def lowpass(self, alpha, new_value, old_value):
         return (alpha * new_value) + (1.0 - alpha) * old_value
 
     def update(self):
@@ -179,8 +184,8 @@ class MPU:
             m[2],
         ]
 
-        self.roll, self.pitch = self.get_roll_pitch()
-        self.heading = self.get_heading(self.lowpass_pc)
+        self.roll, self.pitch = self.get_roll_pitch_my(self.comp_pc)
+        self.heading = self.get_heading(self.lowpass_pc, tiltcomp=True)
 
         return self.imu
 
@@ -201,15 +206,95 @@ class MPU:
 
         return roll, pitch
 
-    def get_heading(self, alpha=1.0):
+    def get_roll_pitch_my(self, alpha=1.0):
+        now = ticks_us()
+        self.dt = ticks_diff(now, self.start) / 1000000
+        self.start = now
+
+        # Read sensor data
+        # TODO Fix sign for both roll and pitch
+        ax = self.imu[0]
+        ay = self.imu[1]
+        az = self.imu[2]
+
+        gx = self.imu[3]
+        gy = self.imu[4]
+        gz = self.imu[5]
+
+        # Calculate gyro rate [deg/sec]
+        gyroXRate = gx  # / 0.017453292519943
+        gyroYRate = gy  # / 0.017453292519943
+        gyroZRate = gz  # / 0.017453292519943
+
+        # Calculate gyro angle [deg]
+        gyroXAngle = gyroXRate * self.dt
+        gyroYAngle = gyroYRate * self.dt
+        gyroZAngle = gyroZRate * self.dt * DEG2RAD
+
+        # Calculate roll and pitch
+        roll = atan2(ay, sqrt((ax * ax) + (az * az)))
+        pitch = atan2(-ax, sqrt((ay * ay) + (az * az)))
+
+        roll -= pitch * sin(gyroZAngle) * RAD2DEG
+        pitch += roll * sin(gyroZAngle) * RAD2DEG
+
+        # Calculate composite angle
+        if self.comp_roll is None:
+            self.comp_roll = roll
+        else:
+            self.comp_roll = alpha * (self.comp_roll + gyroXAngle) + (1 - alpha) * roll
+
+        if self.comp_pitch is None:
+            self.comp_pitch = pitch
+        else:
+            self.comp_pitch = (
+                alpha * (self.comp_pitch + gyroYAngle) + (1 - alpha) * pitch
+            )
+
+            # print("roll", roll, "pitch", pitch)
+            # #print("roll", roll, "pitch", pitch, "c_roll", self.comp_roll, "c_pitch", self.comp_pitch)
+            # print("dt", dt, "roll", roll, "g_roll", gyro_roll, "c_roll", comp_roll)
+            # print("pitch", pitch, "c_pitch", comp_pitch)
+            # print(gyroXAngle, gyroYAngle, gyroZAngle)
+            # print(gyro_yaw)
+
+        if self.lowpass_roll is None:
+            self.lowpass_roll = self.comp_roll
+        else:
+            self.lowpass_roll = self.lowpass(
+                self.lowpass_pc, self.comp_roll, self.lowpass_roll
+            )
+        if self.lowpass_pitch is None:
+            self.lowpass_pitch = self.comp_pitch
+        else:
+            self.lowpass_pitch = self.lowpass(
+                self.lowpass_pc, self.comp_pitch, self.lowpass_pitch
+            )
+
+        return self.lowpass_roll, self.lowpass_pitch
+
+    def get_heading(self, alpha=1.0, tiltcomp=False):
 
         mx = self.imu[6]
         my = self.imu[7]
+        mz = self.imu[8]
 
-        self.comp_mx = self.low_pass(alpha, mx, self.comp_mx)
-        self.comp_my = self.low_pass(alpha, my, self.comp_my)
+        # TODO Fix this block
+        if tiltcomp:
+            m_roll = self.comp_roll * DEG2RAD
+            m_pitch = self.comp_pitch * DEG2RAD
 
-        heading = 90 - atan2(self.comp_my, self.comp_mx) * RAD2DEG
+            mx = (
+                mx * cos(m_pitch)
+                + my * sin(m_roll) * sin(m_pitch)
+                - mz * cos(m_roll) * sin(m_pitch)
+            )
+            my = my * cos(m_roll) + mz * sin(m_roll)
+
+        self.lowpass_mx = self.lowpass(alpha, mx, self.lowpass_mx)
+        self.lowpass_my = self.lowpass(alpha, my, self.lowpass_my)
+
+        heading = 90 - atan2(self.lowpass_my, self.lowpass_mx) * RAD2DEG
 
         # if heading_deg < 0:
         #     heading_deg += 360
@@ -217,54 +302,6 @@ class MPU:
         heading = (180 - heading) % 360
 
         return heading
-
-    # def get_roll_pitch_v2(self, alpha=1.0):
-
-    #     now = ticks_us()
-    #     self.dt = ticks_diff(now, self.start) / 1000000
-    #     self.start = now
-
-    #     # Read sensor data
-    #     ax, ay, az, gx, gy, gz, mx, my, mz = self.get_agm()
-
-    #     # Calculate gyro rate [deg/sec]
-    #     gyroXRate = gx / 0.017453292519943
-    #     gyroYRate = gy / 0.017453292519943
-    #     gyroZRate = gz / 0.017453292519943
-
-    #     # Calculate gyro angle [deg]
-    #     gyroXAngle = gyroXRate * self.dt
-    #     gyroYAngle = gyroYRate * self.dt
-    #     gyroZAngle = gyroZRate * self.dt
-
-    #     # Calculate roll and pitch
-    #     roll = atan2(ay, sqrt((ax * ax) + (az * az))) * RAD2DEG
-    #     pitch = atan2(-ax, sqrt((ay * ay) + (az * az))) * RAD2DEG
-
-    #     roll -= pitch * sin(gyroZAngle)
-    #     pitch += roll * sin(gyroZAngle)
-
-    #     # Calculate composite angle
-    #     if self.comp_roll is None:
-    #         self.comp_roll = roll
-    #     else:
-    #         self.comp_roll = alpha * (self.comp_roll + gyroXAngle) + (1 - alpha) * roll
-
-    #     if self.comp_pitch is None:
-    #         self.comp_pitch = pitch
-    #     else:
-    #         self.comp_pitch = (
-    #             alpha * (self.comp_pitch + gyroYAngle) + (1 - alpha) * pitch
-    #         )
-
-    #     # print("roll", roll, "pitch", pitch)
-    #     # #print("roll", roll, "pitch", pitch, "c_roll", self.comp_roll, "c_pitch", self.comp_pitch)
-    #     # print("dt", dt, "roll", roll, "g_roll", gyro_roll, "c_roll", comp_roll)
-    #     # print("pitch", pitch, "c_pitch", comp_pitch)
-    #     # print(gyroXAngle, gyroYAngle, gyroZAngle)
-    #     # print(gyro_yaw)
-
-    #     return self.comp_roll, self.comp_pitch
 
     def __enter__(self):
         return self
@@ -281,11 +318,13 @@ if __name__ == "__main__":
             # print(
             #     "\r\n /-------------------------------------------------------------/ \r\n"
             # )
+            # print(mpu9250.update())
             mpu9250.update()
 
             # pitch, roll, heading = mpu9250.get_roll_pitch_v1(mpu9250.lowpass_pc)
-            # print(mpu9250.roll, mpu9250.pitch)
-            print("heading", mpu9250.heading)
+            print("roll " + str(mpu9250.roll))
+            print("pitch " + str(mpu9250.pitch))
+            print("heading " + str(mpu9250.heading))
 
             # pitch, roll = mpu9250.get_roll_pitch_v2(mpu9250.comp_pc)
             # print(mpu9250.get_roll_pitch_v3(mpu9250.comp_pc))
@@ -322,7 +361,7 @@ if __name__ == "__main__":
             #         # (-((Mag[2] - 4912.0))),
             #     )
             # )
-            sleep(0.05)
+            sleep(0.1)
 
     except KeyboardInterrupt:
         exit()

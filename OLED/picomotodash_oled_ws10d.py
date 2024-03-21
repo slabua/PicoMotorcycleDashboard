@@ -117,7 +117,7 @@ def moving_avg(n):
 
 
 # Neopixel setup
-PIN_NUM = 23
+PIN_NUM = 3
 NUM_LEDS = 1
 RGBW = False
 np = neopixel.NeoPixel(Pin(PIN_NUM), NUM_LEDS, bpp=4 if RGBW else 3, timing=1)
