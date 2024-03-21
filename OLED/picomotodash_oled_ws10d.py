@@ -63,22 +63,6 @@ HEADING = 0
 labels = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"]
 
 
-# def calculate_heading():
-#     x, y, _ = read_mpu()
-
-#     # Calculate heading in radians
-#     heading_rad = math.atan2(y, x)
-
-#     # Convert heading to degrees
-#     heading_deg = math.degrees(heading_rad)
-
-#     # North to zero
-#     heading_deg = 90 - heading_deg
-
-#     # Adjust for negative values
-#     return (heading_deg + 360) % 360
-
-
 def moving_avg(n):
     global headings
 
@@ -118,7 +102,7 @@ def moving_avg(n):
 
 # Neopixel setup
 PIN_NUM = 3
-NUM_LEDS = 1
+NUM_LEDS = 37
 RGBW = False
 np = neopixel.NeoPixel(Pin(PIN_NUM), NUM_LEDS, bpp=4 if RGBW else 3, timing=1)
 
@@ -137,6 +121,17 @@ def scale(value, leftMin, leftMax, rightMin, rightMax):
 
 def set_np(value):
     np[0] = (0, value, 0)
+    np.write()
+
+
+def set_np_rpm():
+    upto = RPM_ESTIMATE // 1000
+    for n in range(22, 37):
+        if n < upto + 22:
+            np[n] = (2, 2, 0)
+        else:
+            np[n] = (0, 0, 0)
+
     np.write()
 
 
@@ -284,29 +279,7 @@ def read_gps():
 def read_mpu():
     global icm
 
-    # icm = MPU925x.ReadAll()
     icm = mpu.update()
-
-    # print("==================================================")
-    # print("Acceleration: X = %d, Y = %d, Z = %d" % (icm[0], icm[1], icm[2]))
-    # print("Gyroscope:    X = %d , Y = %d , Z = %d" % (icm[3], icm[4], icm[5]))
-    # print("Magnetic:     X = %d , Y = %d , Z = %d" %(icm[6],icm[7],icm[8]))
-
-    # TEST
-    # xx = icm[6] - x_off + 2**15
-    # yy = icm[7] - y_off + 2**15
-
-    xx = icm[6]  # / 2**16 * 360
-    # if xx > 2**15:
-    #     xx = xx - 2**16
-    yy = icm[7]  # / 2**16 * 360
-    # if yy > 2**15:
-    #     yy = yy - 2**16
-    zz = icm[8]  # / 2**16 * 360
-    # if zz > 2**15:
-    #     zz = zz - 2**16
-
-    return xx, yy, zz
 
 
 def draw_compass():
@@ -361,9 +334,9 @@ def draw_compass():
 
 
 def draw_icm():
-    print("Acceleration: X = %.1f,\tY = %.1f,\tZ = %.1f" % (icm[0], icm[1], icm[2]))
-    print("Gyroscope:    X = %.1f,\tY = %.1f,\tZ = %.1f" % (icm[3], icm[4], icm[5]))
-    print("Magnetic:     X = %.1f,\tY = %.1f,\tZ = %.1f" % (icm[6], icm[7], icm[8]))
+    print("Acceleration: X = %.3f,\tY = %.3f,\tZ = %.3f" % (icm[0], icm[1], icm[2]))
+    print("Gyroscope:    X = %.3f,\tY = %.3f,\tZ = %.3f" % (icm[3], icm[4], icm[5]))
+    print("Magnetic:     X = %.3f,\tY = %.3f,\tZ = %.3f" % (icm[6], icm[7], icm[8]))
 
     display.line(0, 26, 127, 26, 1)
     display.text("%.1f, %.1f, %.1f" % (icm[0], icm[1], icm[2]), 0, 30)
@@ -480,6 +453,8 @@ def draw_rpm():
     display.text("R:" + f"{str(round(RPM_ESTIMATE)):>5}", 71, 54, 0)
     display.text("R:" + f"{str(round(RPM_ESTIMATE)):>5}", 69, 52, 1)
 
+    set_np_rpm()
+
 
 # GPIO setup
 """
@@ -590,10 +565,9 @@ try:
             # read_gps()
 
             # HEADING = calculate_heading()
-            # HEADING = mpu.PRY()[2]
-            _ = read_mpu()
+            read_mpu()
             HEADING = mpu.heading
-            HEADING = moving_avg(9)
+            HEADING = moving_avg(5)  # 9
 
             # print(key0.value(), key1.value())
 

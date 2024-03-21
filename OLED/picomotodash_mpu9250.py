@@ -294,8 +294,10 @@ class MPU:
         self.lowpass_mx = self.lowpass(alpha, mx, self.lowpass_mx)
         self.lowpass_my = self.lowpass(alpha, my, self.lowpass_my)
 
+        # Calculate heading in radians and North to zero
         heading = 90 - atan2(self.lowpass_my, self.lowpass_mx) * RAD2DEG
 
+        # Adjust for negative values
         # if heading_deg < 0:
         #     heading_deg += 360
         heading = (heading + self.declination + 360) % 360
