@@ -130,8 +130,8 @@ def set_np(value):
 
 def set_np_rpm():
     upto = RPM_ESTIMATE // 1000
-    for n in range(22, 37):
-        if n < upto + 22:
+    for n in range(24, 37):
+        if n < upto + 24:
             np[n] = (2, 2, 0)
         else:
             np[n] = (0, 0, 0)
