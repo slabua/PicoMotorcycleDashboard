@@ -21,6 +21,7 @@ import sh1107
 # import MPU925x  # Waveshare Pico Environment Sensor
 
 from picomotodash_mpu9250 import MPU as pmdMPU  # Waveshare Pico 10DOF IMU
+from picomotodash_rpm import RPM as pmdRPM
 
 from L76 import l76x
 from L76.micropyGPS.micropyGPS import MicropyGPS
@@ -40,6 +41,9 @@ display.contrast(0x80)
 display.fill(0)
 display.show()
 
+# RPM setup
+RPM_ESTIMATE = 0
+PWM2RPM_FACTOR = 10
 
 # GPS setup
 UARTx = 0
@@ -470,11 +474,6 @@ pwm2.freq(800)
 pwm2.duty_u16(32768)
 
 
-# Thread setup
-RPM_ESTIMATE = 0
-PWM2RPM_FACTOR = 10
-
-
 def startup_rpm():
     global RPM_ESTIMATE
 
@@ -495,54 +494,21 @@ def decrease_rpm():
 
 
 def thread1(PWM2RPM_FACTOR):
-    from machine import Pin
-    from utime import sleep_us, ticks_us
-
     global RPM_ESTIMATE
-    n_repeats = 1
 
-    pwm22 = Pin(22, Pin.IN, Pin.PULL_DOWN)  # RPM pwm
+    rpm = pmdRPM(pin=22, factor=PWM2RPM_FACTOR)
 
     startup_rpm()
 
     while True:
         read_gps()
 
-        durations = []
-        if pwm22.value() == 1:
-            cycle_start = ticks_us()
-            for _ in range(n_repeats):
-                count = 0
-                d_start = ticks_us()
-                while pwm22.value() == 1:
-                    count += 1
-                    sleep_us(100)
-                    if count > 1000:
-                        decrease_rpm()
-                        break
-                durations.append(ticks_us() - d_start)
-                while pwm22.value() == 0:
-                    count += 1
-                    sleep_us(100)
-                    if count > 1000:
-                        decrease_rpm()
-                        break
-            cycle_stop = ticks_us()
-            cycle_duration = cycle_stop - cycle_start
-            cycle_avg = cycle_duration / n_repeats
-            freq = 1000000 / cycle_avg
-            duration_avg = sum(durations) / len(durations)
+        rpm.rpm()
+        RPM_ESTIMATE = rpm.RPM_ESTIMATE
 
-            repeat_factor = ((50 - 20) / (1500 - 150)) * freq + (  # y = mx + q
-                50 - ((50 - 20) / (1500 - 150) * 1500)
-            )
-            n_repeats = (
-                int((freq) / repeat_factor) if int((freq) / repeat_factor) != 0 else 1
-            )
-            duty = (duration_avg / cycle_avg) * 100
-            RPM_ESTIMATE = freq * PWM2RPM_FACTOR
-
-            # print("RPM: {:.2f}".format(RPM_ESTIMATE), n_repeats, repeat_factor)
+        if rpm.timeout:
+            decrease_rpm()
+            rpm.reset()
 
 
 show_logo()
@@ -560,7 +526,6 @@ try:
         # print(gc.mem_alloc())
 
         if key0.value() == 1:
-            pass
             # sleep(0.1)
             # read_gps()
 
