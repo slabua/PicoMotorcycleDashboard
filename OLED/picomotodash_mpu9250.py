@@ -25,7 +25,15 @@ DEG2RAD = 3.1415 / 180
 class MPU:
 
     def __init__(
-        self, id=id, scl=scl, sda=sda, freq=400000, calib_ag=True, parent=None
+        self,
+        id=id,
+        scl=scl,
+        sda=sda,
+        freq=400000,
+        calib_ag=True,
+        tiltcomp=True,
+        truenorth=True,
+        parent=None,
     ):
 
         print("Initialising MPU9250...")
@@ -33,8 +41,8 @@ class MPU:
         i2c = I2C(id=id, scl=scl, sda=sda, freq=freq)
         # print(i2c.scan())
 
-        mpu6500 = MPU6500(i2c, accel_sf=1, gyro_sf=1)
-        self.mpu = MPU9250(i2c, mpu6500=mpu6500)
+        mpu6500 = MPU6500(i2c=i2c, accel_sf=1, gyro_sf=1)
+        self.mpu = MPU9250(i2c=i2c, mpu6500=mpu6500)
 
         print("Calibrating Magnetometer...")
         self.mpu.ak8963.calibrate(count=100)
@@ -67,6 +75,8 @@ class MPU:
         self.lowpass_pitch = None
         self.lowpass_mx = 0.0
         self.lowpass_my = 0.0
+        self.tiltcomp = tiltcomp
+        self.truenorth = truenorth
         self.heading = 0
 
         # https://www.magnetic-declination.com/Japan/Kyoto/1340633.html
@@ -184,8 +194,10 @@ class MPU:
             m[2],
         ]
 
-        self.roll, self.pitch = self.get_roll_pitch_my(self.comp_pc)
-        self.heading = self.get_heading(self.lowpass_pc, tiltcomp=True)
+        self.roll, self.pitch = self.get_roll_pitch_my(alpha=self.comp_pc)
+        self.heading = self.get_heading(
+            alpha=self.lowpass_pc, tiltcomp=self.tiltcomp, truenorth=self.truenorth
+        )
 
         return self.imu
 
@@ -273,7 +285,7 @@ class MPU:
 
         return self.lowpass_roll, self.lowpass_pitch
 
-    def get_heading(self, alpha=1.0, tiltcomp=False):
+    def get_heading(self, alpha=1.0, tiltcomp=False, truenorth=True):
 
         mx = self.imu[6]
         my = self.imu[7]
@@ -300,7 +312,8 @@ class MPU:
         # Adjust for negative values
         # if heading_deg < 0:
         #     heading_deg += 360
-        heading = (heading + self.declination + 360) % 360
+        declination = self.declination if truenorth else 0
+        heading = (heading + declination + 360) % 360
         heading = (180 - heading) % 360
 
         return heading
