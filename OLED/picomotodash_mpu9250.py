@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Pico Motorcycle Dashboard OLED
+"""Pico Motorcycle Dashboard MPU
 """
 
 __author__ = "Salvatore La Bua"
