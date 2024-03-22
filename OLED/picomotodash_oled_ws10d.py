@@ -21,6 +21,7 @@ import sh1107
 # import MPU925x  # Waveshare Pico Environment Sensor
 
 from picomotodash_mpu9250 import MPU as pmdMPU  # Waveshare Pico 10DOF IMU
+from picomotodash_neopx import NEOPX as pdmNEOPX
 from picomotodash_rpm import RPM as pmdRPM
 
 from L76 import l76x
@@ -87,8 +88,7 @@ def moving_avg(n):
         np_val = avg
 
     if has_positive and has_negative:
-        np[0] = (0, 0, 32)
-        np.write()
+        ring.set_np(0, (0, 0, 32))
 
         tmp_headings = []
         for h in headings:
@@ -99,7 +99,7 @@ def moving_avg(n):
 
         return avg
 
-    set_np(round(scale(np_val, 180, 0, 0, 32)))
+    ring.set_np(0, (0, round(scale(np_val, 180, 0, 0, 32)), 0))
 
     return avg
 
@@ -107,8 +107,7 @@ def moving_avg(n):
 # Neopixel setup
 PIN_NUM = 3
 NUM_LEDS = 37
-RGBW = False
-np = neopixel.NeoPixel(Pin(PIN_NUM), NUM_LEDS, bpp=4 if RGBW else 3, timing=1)
+ring = pdmNEOPX(pin=PIN_NUM, n=NUM_LEDS)
 
 
 def scale(value, leftMin, leftMax, rightMin, rightMax):
@@ -121,22 +120,6 @@ def scale(value, leftMin, leftMax, rightMin, rightMax):
 
     # Convert the 0-1 range into a value in the right range.
     return rightMin + (valueScaled * rightSpan)
-
-
-def set_np(value):
-    np[0] = (0, value, 0)
-    np.write()
-
-
-def set_np_rpm():
-    upto = RPM_ESTIMATE // 1000
-    for n in range(24, 37):
-        if n < upto + 24:
-            np[n] = (2, 2, 0)
-        else:
-            np[n] = (0, 0, 0)
-
-    np.write()
 
 
 # Utility functions
@@ -457,7 +440,7 @@ def draw_rpm():
     display.text("R:" + f"{str(round(RPM_ESTIMATE)):>5}", 71, 54, 0)
     display.text("R:" + f"{str(round(RPM_ESTIMATE)):>5}", 69, 52, 1)
 
-    set_np_rpm()
+    ring.set_np_rpm(RPM_ESTIMATE)
 
 
 # GPIO setup
