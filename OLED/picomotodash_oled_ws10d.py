@@ -78,7 +78,7 @@ def moving_avg(n):
         np_val = avg
 
     if has_positive and has_negative:
-        ring.set_np(0, (0, 0, 32))
+        neopixel_ring.set_np(0, (0, 0, 32))
 
         tmp_headings = []
         for h in headings:
@@ -89,7 +89,7 @@ def moving_avg(n):
 
         return avg
 
-    ring.set_np(0, (0, round(map_range(np_val, (180, 0), (0, 32))), 0))
+    neopixel_ring.set_np(0, (0, round(map_range(np_val, (180, 0), (0, 32))), 0))
 
     return avg
 
@@ -97,7 +97,7 @@ def moving_avg(n):
 # Neopixel setup
 PIN_NUM = 3
 NUM_LEDS = 37
-ring = pdmNEOPX(pin=PIN_NUM, n=NUM_LEDS)
+neopixel_ring = pdmNEOPX(pin=PIN_NUM, n=NUM_LEDS)
 
 
 # Utility functions
@@ -364,7 +364,7 @@ def draw_rpm():
     display.text("R:" + f"{str(round(RPM_ESTIMATE)):>5}", 71, 54, 0)
     display.text("R:" + f"{str(round(RPM_ESTIMATE)):>5}", 69, 52, 1)
 
-    ring.set_np_rpm(RPM_ESTIMATE)
+    neopixel_ring.set_np_rpm(RPM_ESTIMATE)
 
 
 # GPIO setup
