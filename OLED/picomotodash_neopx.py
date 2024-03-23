@@ -20,16 +20,9 @@ class NEOPX:
         self.n = n
         self.np = neopixel.NeoPixel(Pin(pin), n, bpp=4 if rgbw else 3, timing=1)
 
-    def scale(self, value, leftMin, leftMax, rightMin, rightMax):
-        # Figure out how 'wide' each range is
-        leftSpan = leftMax - leftMin
-        rightSpan = rightMax - rightMin
-
-        # Convert the left range into a 0-1 range (float)
-        valueScaled = float(value - leftMin) / float(leftSpan)
-
-        # Convert the 0-1 range into a value in the right range.
-        return rightMin + (valueScaled * rightSpan)
+    def map_range(self, value, in_range, out_range):
+        (a, b), (c, d) = in_range, out_range
+        return (value - a) / (b - a) * (d - c) + c
 
     def set_np(self, i, rgb_tuple):
         self.np[i] = rgb_tuple

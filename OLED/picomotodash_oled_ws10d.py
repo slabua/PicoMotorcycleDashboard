@@ -99,7 +99,7 @@ def moving_avg(n):
 
         return avg
 
-    ring.set_np(0, (0, round(scale(np_val, 180, 0, 0, 32)), 0))
+    ring.set_np(0, (0, round(map_range(np_val, (180, 0), (0, 32))), 0))
 
     return avg
 
@@ -110,16 +110,9 @@ NUM_LEDS = 37
 ring = pdmNEOPX(pin=PIN_NUM, n=NUM_LEDS)
 
 
-def scale(value, leftMin, leftMax, rightMin, rightMax):
-    # Figure out how 'wide' each range is
-    leftSpan = leftMax - leftMin
-    rightSpan = rightMax - rightMin
-
-    # Convert the left range into a 0-1 range (float)
-    valueScaled = float(value - leftMin) / float(leftSpan)
-
-    # Convert the 0-1 range into a value in the right range.
-    return rightMin + (valueScaled * rightSpan)
+def map_range(value, in_range, out_range):
+    (a, b), (c, d) = in_range, out_range
+    return (value - a) / (b - a) * (d - c) + c
 
 
 # Utility functions
