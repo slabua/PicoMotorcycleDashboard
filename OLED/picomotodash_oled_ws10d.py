@@ -401,7 +401,28 @@ def decrease_rpm():
 
 
 def thread1(PWM2RPM_FACTOR):
+    from utime import sleep
+
     global RPM_ESTIMATE
+
+    # def startup_rpm():
+    #     global RPM_ESTIMATE
+
+    #     while RPM_ESTIMATE < 12000:
+    #         sleep_us(50)
+    #         RPM_ESTIMATE += 1
+    #     while RPM_ESTIMATE > 1:
+    #         sleep_us(50)
+    #         RPM_ESTIMATE -= 1
+
+    # def decrease_rpm():
+    #     global RPM_ESTIMATE
+
+    #     while RPM_ESTIMATE > 1:
+    #         sleep_us(200)
+    #         RPM_ESTIMATE -= 1
+
+    sleep(0.5)
 
     rpm = pmdRPM(pin=22, factor=PWM2RPM_FACTOR)
 
@@ -421,6 +442,7 @@ def thread1(PWM2RPM_FACTOR):
 show_logo()
 
 gc.collect()
+# sleep(0.5)
 
 _thread.start_new_thread(thread1, [PWM2RPM_FACTOR])
 
