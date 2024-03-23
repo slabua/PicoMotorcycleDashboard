@@ -203,7 +203,7 @@ def show_logo():
 
 
 def read_gps():
-    gps.update_gps()
+    gps.update_gps(verbose=False)
 
 
 def read_mpu():
@@ -264,21 +264,21 @@ def draw_compass():
 def draw_icm():
     print(
         "Acceleration: X = %.3f,\tY = %.3f,\tZ = %.3f"
-        % (mpu.icm[0], mpu.icm[1], mpu.icm[2])
+        % (mpu.imu[0], mpu.imu[1], mpu.imu[2])
     )
     print(
         "Gyroscope:    X = %.3f,\tY = %.3f,\tZ = %.3f"
-        % (mpu.icm[3], mpu.icm[4], mpu.icm[5])
+        % (mpu.imu[3], mpu.imu[4], mpu.imu[5])
     )
     print(
         "Magnetic:     X = %.3f,\tY = %.3f,\tZ = %.3f"
-        % (mpu.icm[6], mpu.icm[7], mpu.icm[8])
+        % (mpu.imu[6], mpu.imu[7], mpu.imu[8])
     )
 
     display.line(0, 26, 127, 26, 1)
-    display.text("%.1f, %.1f, %.1f" % (mpu.icm[0], mpu.icm[1], mpu.icm[2]), 0, 30)
-    display.text("%.1f, %.1f, %.1f" % (mpu.icm[3], mpu.icm[4], mpu.icm[5]), 0, 39)
-    display.text("%.1f, %.1f, %.1f" % (mpu.icm[6], mpu.icm[7], mpu.icm[8]), 0, 48)
+    display.text("%.1f, %.1f, %.1f" % (mpu.imu[0], mpu.imu[1], mpu.imu[2]), 0, 30)
+    display.text("%.1f, %.1f, %.1f" % (mpu.imu[3], mpu.imu[4], mpu.imu[5]), 0, 39)
+    display.text("%.1f, %.1f, %.1f" % (mpu.imu[6], mpu.imu[7], mpu.imu[8]), 0, 48)
 
 
 def draw_infobox():
@@ -325,6 +325,8 @@ def draw_gps():
 
 
 def draw_rpm():
+    # print("RPM: %.3f" % RPM_ESTIMATE)
+
     display.rect(0, 45, 128, 64 - 45, 1)
 
     display.line(1, 45, 126, 45, 0)
@@ -405,23 +407,6 @@ def thread1(PWM2RPM_FACTOR):
 
     global RPM_ESTIMATE
 
-    # def startup_rpm():
-    #     global RPM_ESTIMATE
-
-    #     while RPM_ESTIMATE < 12000:
-    #         sleep_us(50)
-    #         RPM_ESTIMATE += 1
-    #     while RPM_ESTIMATE > 1:
-    #         sleep_us(50)
-    #         RPM_ESTIMATE -= 1
-
-    # def decrease_rpm():
-    #     global RPM_ESTIMATE
-
-    #     while RPM_ESTIMATE > 1:
-    #         sleep_us(200)
-    #         RPM_ESTIMATE -= 1
-
     sleep(0.5)
 
     rpm = pmdRPM(pin=22, factor=PWM2RPM_FACTOR)
@@ -429,7 +414,7 @@ def thread1(PWM2RPM_FACTOR):
     startup_rpm()
 
     while True:
-        read_gps()
+        # read_gps()
 
         rpm.estimate_rpm()
         RPM_ESTIMATE = rpm.RPM_ESTIMATE
@@ -456,7 +441,7 @@ try:
 
         if key0.value() == 1:
             # sleep(0.1)
-            # read_gps()
+            read_gps()
 
             # HEADING = calculate_heading()
             read_mpu()

@@ -65,10 +65,10 @@ class RPM:
                 50 - ((50 - 20) / (1500 - 150) * 1500)
             )
             self.n_repeats = (
-                int((freq) / repeat_factor) if int((freq) / repeat_factor) != 0 else 1
+                int(freq / repeat_factor) if int(freq / repeat_factor) != 0 else 1
             )
-            self.duty = (duration_avg / cycle_avg) * 100
-            self.RPM_ESTIMATE = round(freq * self.factor)
+            self.duty = duration_avg / cycle_avg * 100
+            self.RPM_ESTIMATE = freq * self.factor
 
             # print("RPM: {:.2f}".format(self.RPM_ESTIMATE), self.n_repeats, repeat_factor)
 

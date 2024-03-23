@@ -50,7 +50,7 @@ class GPS:
         #     parser.update(x)
         #     print(x)
 
-        sleep(0.1)
+        # sleep(0.1)
 
         if self.gnss_l76b.uart_any():
             sentence = self.parser.update(chr(self.gnss_l76b.uart_receive_byte()[0]))
