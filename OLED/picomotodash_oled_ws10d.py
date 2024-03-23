@@ -21,8 +21,6 @@ from picomotodash_mpu9250 import MPU as pmdMPU
 from picomotodash_neopx import NEOPX as pdmNEOPX
 from picomotodash_rpm import RPM as pmdRPM
 
-# from L76 import l76x
-# from L76.micropyGPS.micropyGPS import MicropyGPS
 from machine import Pin, PWM, SPI
 from utime import sleep, sleep_us
 

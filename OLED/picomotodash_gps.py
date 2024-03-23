@@ -29,8 +29,11 @@ class GPS:
         # self.sentence = ""
 
         self.altitude = 0
+        self.geoid_height = 0
+        self.hdop = 0
         self.latitude = [0, 0]
         self.longitude = [0, 0]
+        self.satellites_in_use = 0
         self.speed = -1
         self.timestamp = [0, 0, 0]
 
@@ -40,7 +43,7 @@ class GPS:
         self.n_repeats = 1
         self.timeout = False
 
-    def update_gps(self):
+    def update_gps(self, verbose="v"):
         # parser.update(chr(gnss_l76b.uart_receive_byte()[0]))
         # my_sentence = "$GPRMC,081836,A,3751.65,S,14507.36,E,000.0,360.0,130998,011.3,E*62"
         # for x in my_sentence:
@@ -55,37 +58,49 @@ class GPS:
             if sentence:
 
                 self.altitude = self.parser.altitude
+                self.geoid_height = self.parser.geoid_height
+                self.hdop = self.parser.hdop
                 self.latitude = self.parser.latitude
                 self.longitude = self.parser.longitude
+                self.satellites_in_use = self.parser.satellites_in_use
                 self.speed = self.parser.speed[2]
                 self.timestamp = self.parser.timestamp
 
-                # print(sentence)
-                print(
-                    "WGS84 Coordinate: Latitude(%c), Longitude(%c) %.9f,%.9f"
-                    % (
-                        self.latitude[1],
-                        self.longitude[1],
-                        self.latitude[0],
-                        self.longitude[0],
-                    )
-                )
-                print(
-                    "Timestamp: %d:%d:%d"
-                    % (
-                        self.timestamp[0],
-                        self.timestamp[1],
-                        self.timestamp[2],
-                    )
-                )
-                print("Fix Status:", self.parser.fix_stat)
+                if verbose == "v":
+                    self.print_gps_data()
 
-                print("Altitude:%d m" % (self.altitude))
-                print("Height Above Geoid:", self.parser.geoid_height)
-                print("Horizontal Dilution of Precision:", self.parser.hdop)
-                print("Satellites in Use by Receiver:", self.parser.satellites_in_use)
-                print("Speed:", self.speed)
-                print("")
+            if verbose == "vv":
+                self.print_gps_data()
+
+        if verbose == "vvv":
+            self.print_gps_data()
+
+    def print_gps_data(self):
+        print(
+            "WGS84 Coordinate: Latitude(%c), Longitude(%c) %.9f,%.9f"
+            % (
+                self.latitude[1],
+                self.longitude[1],
+                self.latitude[0],
+                self.longitude[0],
+            )
+        )
+        print(
+            "Timestamp: %d:%d:%d"
+            % (
+                self.timestamp[0],
+                self.timestamp[1],
+                self.timestamp[2],
+            )
+        )
+        print("Fix Status:", self.parser.fix_stat)
+
+        print("Altitude:%d m" % (self.altitude))
+        print("Height Above Geoid:", self.geoid_height)
+        print("Horizontal Dilution of Precision:", self.hdop)
+        print("Satellites in Use by Receiver:", self.satellites_in_use)
+        print("Speed:", self.speed)
+        print("")
 
     def __enter__(self):
         return self
