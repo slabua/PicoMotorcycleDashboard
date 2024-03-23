@@ -43,14 +43,12 @@ PWM2RPM_FACTOR = 10
 
 # GPS setup
 gps = pmdGPS(local_offset=9, location_formatting="dd")
-SPEED = -1
 
 # Magnetometer setup
 mpu = pmdMPU()
 # x_off = 28099.99
 # y_off = 30178.57
 # z_off = 43987.61
-icm = []
 headings = []
 HEADING = 0
 labels = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"]
@@ -205,16 +203,11 @@ def show_logo():
 
 
 def read_gps():
-    global SPEED
-
     gps.update_gps()
-    SPEED = gps.speed
 
 
 def read_mpu():
-    global icm
-
-    icm = mpu.update_mpu()
+    mpu.update_mpu()
 
 
 def draw_compass():
@@ -269,14 +262,23 @@ def draw_compass():
 
 
 def draw_icm():
-    print("Acceleration: X = %.3f,\tY = %.3f,\tZ = %.3f" % (icm[0], icm[1], icm[2]))
-    print("Gyroscope:    X = %.3f,\tY = %.3f,\tZ = %.3f" % (icm[3], icm[4], icm[5]))
-    print("Magnetic:     X = %.3f,\tY = %.3f,\tZ = %.3f" % (icm[6], icm[7], icm[8]))
+    print(
+        "Acceleration: X = %.3f,\tY = %.3f,\tZ = %.3f"
+        % (mpu.icm[0], mpu.icm[1], mpu.icm[2])
+    )
+    print(
+        "Gyroscope:    X = %.3f,\tY = %.3f,\tZ = %.3f"
+        % (mpu.icm[3], mpu.icm[4], mpu.icm[5])
+    )
+    print(
+        "Magnetic:     X = %.3f,\tY = %.3f,\tZ = %.3f"
+        % (mpu.icm[6], mpu.icm[7], mpu.icm[8])
+    )
 
     display.line(0, 26, 127, 26, 1)
-    display.text("%.1f, %.1f, %.1f" % (icm[0], icm[1], icm[2]), 0, 30)
-    display.text("%.1f, %.1f, %.1f" % (icm[3], icm[4], icm[5]), 0, 39)
-    display.text("%.1f, %.1f, %.1f" % (icm[6], icm[7], icm[8]), 0, 48)
+    display.text("%.1f, %.1f, %.1f" % (mpu.icm[0], mpu.icm[1], mpu.icm[2]), 0, 30)
+    display.text("%.1f, %.1f, %.1f" % (mpu.icm[3], mpu.icm[4], mpu.icm[5]), 0, 39)
+    display.text("%.1f, %.1f, %.1f" % (mpu.icm[6], mpu.icm[7], mpu.icm[8]), 0, 48)
 
 
 def draw_infobox():
@@ -303,7 +305,7 @@ def draw_infobox():
     display.fill_rect(64, 28, 1, 12, 1)
 
     # display.text("R:" + f"{str(round(RPM_ESTIMATE)):>5}", 69, 31, 1)
-    display.text("kph:" + f"{str(round(SPEED)):>3}", 69, 31, 1)
+    display.text("kph:" + f"{str(round(gps.speed)):>3}", 69, 31, 1)
 
 
 def draw_gps():

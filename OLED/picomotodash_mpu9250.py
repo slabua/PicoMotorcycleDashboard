@@ -87,7 +87,7 @@ class MPU:
 
         self.start = ticks_us()
 
-        self.imu = self.update_mpu()
+        self.update_mpu()
         self.roll_bias = self.roll
         self.pitch_bias = self.pitch
 
@@ -198,8 +198,6 @@ class MPU:
         self.heading = self.get_heading(
             alpha=self.lowpass_pc, tiltcomp=self.tiltcomp, truenorth=self.truenorth
         )
-
-        return self.imu
 
     def get_roll_pitch(self) -> float:
         """Returns the readings from the sensor"""
