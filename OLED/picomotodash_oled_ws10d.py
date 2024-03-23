@@ -259,7 +259,7 @@ def read_gps():
 def read_mpu():
     global icm
 
-    icm = mpu.update()
+    icm = mpu.update_mpu()
 
 
 def draw_compass():
@@ -479,7 +479,7 @@ def thread1(PWM2RPM_FACTOR):
     while True:
         read_gps()
 
-        rpm.rpm()
+        rpm.estimate_rpm()
         RPM_ESTIMATE = rpm.RPM_ESTIMATE
 
         if rpm.timeout:

@@ -33,7 +33,7 @@ class RPM:
         self.n_repeats = 1
         self.timeout = False
 
-    def rpm(self):
+    def estimate_rpm(self):
 
         durations = []
         if self.pwm.value() == 1:
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     rpm = RPM(pin=pin, factor=PWM2RPM_FACTOR)
 
     while True:
-        _ = rpm.rpm()
+        _ = rpm.estimate_rpm()
         if not rpm.timeout:
             print(rpm.RPM_ESTIMATE)
         else:

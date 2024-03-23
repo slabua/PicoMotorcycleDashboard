@@ -87,7 +87,7 @@ class MPU:
 
         self.start = ticks_us()
 
-        self.imu = self.update()
+        self.imu = self.update_mpu()
         self.roll_bias = self.roll
         self.pitch_bias = self.pitch
 
@@ -177,7 +177,7 @@ class MPU:
     def lowpass(self, alpha, new_value, old_value):
         return (alpha * new_value) + (1.0 - alpha) * old_value
 
-    def update(self):
+    def update_mpu(self):
         a = self.mpu.acceleration
         g = self.mpu.gyro
         m = self.mpu.magnetic
@@ -334,7 +334,7 @@ if __name__ == "__main__":
             #     "\r\n /-------------------------------------------------------------/ \r\n"
             # )
             # print(mpu9250.update())
-            mpu9250.update()
+            mpu9250.update_mpu()
 
             # pitch, roll, heading = mpu9250.get_roll_pitch_v1(mpu9250.lowpass_pc)
             print("roll " + str(mpu9250.roll))
