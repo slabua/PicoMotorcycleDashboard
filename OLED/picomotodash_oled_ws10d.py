@@ -14,18 +14,15 @@ import _thread
 import framebuf
 import gc
 import math
-
-import neopixel
 import sh1107
 
-# import MPU925x  # Waveshare Pico Environment Sensor
-
-from picomotodash_mpu9250 import MPU as pmdMPU  # Waveshare Pico 10DOF IMU
+from picomotodash_gps import GPS as pmdGPS
+from picomotodash_mpu9250 import MPU as pmdMPU
 from picomotodash_neopx import NEOPX as pdmNEOPX
 from picomotodash_rpm import RPM as pmdRPM
 
-from L76 import l76x
-from L76.micropyGPS.micropyGPS import MicropyGPS
+# from L76 import l76x
+# from L76.micropyGPS.micropyGPS import MicropyGPS
 from machine import Pin, PWM, SPI
 from utime import sleep, sleep_us
 
@@ -47,14 +44,7 @@ RPM_ESTIMATE = 0
 PWM2RPM_FACTOR = 10
 
 # GPS setup
-UARTx = 0
-BAUDRATE = 9600
-gnss_l76b = l76x.L76X(uartx=UARTx, _baudrate=BAUDRATE)
-gnss_l76b.l76x_exit_backup_mode()
-gnss_l76b.l76x_send_command(gnss_l76b.SET_SYNC_PPS_NMEA_ON)
-parser = MicropyGPS(local_offset=9, location_formatting="dd")
-# parser.start_logging("log.txt")
-# sentence = ""
+gps = pmdGPS(local_offset=9, location_formatting="dd")
 SPEED = -1
 
 # Magnetometer setup
@@ -110,11 +100,6 @@ NUM_LEDS = 37
 ring = pdmNEOPX(pin=PIN_NUM, n=NUM_LEDS)
 
 
-def map_range(value, in_range, out_range):
-    (a, b), (c, d) = in_range, out_range
-    return (value - a) / (b - a) * (d - c) + c
-
-
 # Utility functions
 log_file = open("log.csv", "a")
 
@@ -122,6 +107,11 @@ log_file = open("log.csv", "a")
 def _log(data):
     log_file.write(str(data) + "\n")
     log_file.flush()
+
+
+def map_range(value, in_range, out_range):
+    (a, b), (c, d) = in_range, out_range
+    return (value - a) / (b - a) * (d - c) + c
 
 
 def show_logo():
@@ -217,43 +207,10 @@ def show_logo():
 
 
 def read_gps():
-    # global sentence
     global SPEED
 
-    # parser.update(chr(gnss_l76b.uart_receive_byte()[0]))
-    # my_sentence = "$GPRMC,081836,A,3751.65,S,14507.36,E,000.0,360.0,130998,011.3,E*62"
-    # for x in my_sentence:
-    #     parser.update(x)
-    #     print(x)
-
-    sleep(0.1)
-
-    if gnss_l76b.uart_any():
-        sentence = parser.update(chr(gnss_l76b.uart_receive_byte()[0]))
-        if sentence:
-            # print(sentence)
-            print(
-                "WGS84 Coordinate: Latitude(%c), Longitude(%c) %.9f,%.9f"
-                % (
-                    parser.latitude[1],
-                    parser.longitude[1],
-                    parser.latitude[0],
-                    parser.longitude[0],
-                )
-            )
-            print(
-                "Timestamp: %d:%d:%d"
-                % (parser.timestamp[0], parser.timestamp[1], parser.timestamp[2])
-            )
-            print("Fix Status:", parser.fix_stat)
-
-            print("Altitude:%d m" % (parser.altitude))
-            print("Height Above Geoid:", parser.geoid_height)
-            print("Horizontal Dilution of Precision:", parser.hdop)
-            print("Satellites in Use by Receiver:", parser.satellites_in_use)
-            SPEED = parser.speed[2]
-            print("Speed:", SPEED)
-            print("")
+    gps.update_gps()
+    SPEED = gps.speed
 
 
 def read_mpu():
@@ -352,45 +309,19 @@ def draw_infobox():
 
 
 def draw_gps():
-    """
-    print(
-        "WGS84 Coordinate:Lat(%c),Lon(%c) %.9f,%.9f"
-        % (
-            parser.latitude[1],
-            parser.longitude[1],
-            parser.latitude[0],
-            parser.longitude[0],
-        )
-    )
-    print(
-        "Time: %02d:%02d:%02d" % (parser.timestamp[0], parser.timestamp[1], parser.timestamp[2])
-    )
-    ""
-    1 : NO FIX
-    2 : FIX 2D
-    3 : FIX_3D
-    ""
-    print("Fix Status:", parser.fix_stat)
-    print("Altitude:%d m" % (parser.altitude))
-    print("Height Above Geoid:", parser.geoid_height)
-    print("Horizontal Dilution of Precision:", parser.hdop)
-    print("Satellites in Use by Receiver:", parser.satellites_in_use)
-    print("Speed:", parser.speed[2])
-    print("")
-    """
-    display.text(str(parser.longitude[1]), 0, 0, 1)
-    display.text(str(parser.latitude[1]), 0, 9, 1)
-    display.text(str(parser.longitude[0]), 20, 0, 1)
-    display.text(str(parser.latitude[0]), 20, 9, 1)
+    display.text(str(gps.longitude[1]), 0, 0, 1)
+    display.text(str(gps.latitude[1]), 0, 9, 1)
+    display.text(str(gps.longitude[0]), 20, 0, 1)
+    display.text(str(gps.latitude[0]), 20, 9, 1)
     # display.text("Time:", 1, 40, 1)
     display.text(
         "GPS     %02d:%02d:%02d"
-        % (parser.timestamp[0], parser.timestamp[1], parser.timestamp[2]),
+        % (gps.timestamp[0], gps.timestamp[1], gps.timestamp[2]),
         0,
         48,
         1,
     )
-    display.text("Alt %d" % (parser.altitude), 0, 57, 1)
+    display.text("Alt %d" % (gps.altitude), 0, 57, 1)
 
 
 def draw_rpm():
