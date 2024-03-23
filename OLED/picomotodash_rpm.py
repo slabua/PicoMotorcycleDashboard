@@ -99,7 +99,7 @@ if __name__ == "__main__":
     rpm = RPM(pin=pin, factor=PWM2RPM_FACTOR)
 
     while True:
-        _ = rpm.estimate_rpm()
+        rpm.estimate_rpm()
         if not rpm.timeout:
             print(rpm.RPM_ESTIMATE)
         else:

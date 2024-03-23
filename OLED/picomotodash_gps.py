@@ -95,23 +95,9 @@ class GPS:
 
 
 if __name__ == "__main__":
-    pass
-    # from machine import PWM
-    # from utime import sleep
+    gps = GPS(local_offset=9, location_formatting="dd")
 
-    # pwm2 = PWM(Pin(2))
-    # pwm2.freq(800)
-    # pwm2.duty_u16(32768)
+    while True:
+        gps.update_gps()
 
-    # rpm = RPM(pin=pin, factor=PWM2RPM_FACTOR)
-
-    # while True:
-    #     _ = rpm.rpm()
-    #     if not rpm.timeout:
-    #         print(rpm.RPM_ESTIMATE)
-    #     else:
-    #         print("TIMEOUT", rpm.RPM_ESTIMATE)
-    #         sleep(0.5)
-    #         rpm.reset()
-
-    #     sleep(0.02)
+        sleep(0.5)
