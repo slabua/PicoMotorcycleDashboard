@@ -12,6 +12,9 @@ PIN_NUM = 3
 NUM_LEDS = 37
 RGBW = False
 
+MODE_RPM = 0
+MODE_COMPASS = 1
+
 
 class NEOPX:
 
@@ -19,6 +22,8 @@ class NEOPX:
 
         self.n = n
         self.np = neopixel.NeoPixel(Pin(pin), n, bpp=4 if rgbw else 3, timing=1)
+
+        self.mode = MODE_COMPASS
 
     def map_range(self, value, in_range, out_range):
         (a, b), (c, d) = in_range, out_range
@@ -28,8 +33,8 @@ class NEOPX:
         self.np[i] = rgb_tuple
         self.np.write()
 
-    def set_np_rpm(self, value):
-        upto = value // 1000
+    def set_np_rpm(self, rpm):
+        upto = rpm // 1000
         for i in range(24, self.n):
             if i < upto + 24:
                 self.np[i] = (2, 2, 0)
@@ -38,7 +43,25 @@ class NEOPX:
 
         self.np.write()
 
-    def reset(self):
+    def set_np_compass(self, heading):
+        # PLACEHOLDER
+        # TODO Update logic
+        for i in range(24, self.n):
+            self.np[i] = (0, 0, 0)
+
+        i = int(self.map_range(heading, (0, 360), (34, 24)))
+
+        self.np[i] = (0, 0, 5)
+
+        self.np.write()
+
+    def update(self, value):
+        if self.mode == MODE_RPM:
+            self.set_np_rpm(value)
+        elif self.mode == MODE_COMPASS:
+            self.set_np_compass(value)
+
+    def off(self):
         for i in range(self.n):
             self.np[i] = (0, 0, 0)
         self.np.write()

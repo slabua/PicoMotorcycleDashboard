@@ -443,10 +443,11 @@ try:
             # sleep(0.1)
             read_gps()
 
-            # HEADING = calculate_heading()
             read_mpu()
             HEADING = mpu.heading
             HEADING = moving_avg(5)  # 9
+
+            # neopixel_ring.update(HEADING)
 
             # print(key0.value(), key1.value())
 
