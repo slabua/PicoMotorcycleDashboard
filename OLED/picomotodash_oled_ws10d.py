@@ -447,7 +447,7 @@ try:
             HEADING = mpu.heading
             HEADING = moving_avg(5)  # 9
 
-            # neopixel_ring.update(HEADING)
+            # neopixel_ring.update(RPM_ESTIMATE, HEADING)
 
             # print(key0.value(), key1.value())
 

@@ -14,6 +14,7 @@ RGBW = False
 
 MODE_RPM = 0
 MODE_COMPASS = 1
+MODE_BLEND = 2
 
 
 class NEOPX:
@@ -29,42 +30,57 @@ class NEOPX:
         (a, b), (c, d) = in_range, out_range
         return (value - a) / (b - a) * (d - c) + c
 
+    def off(self):
+        for i in range(self.n):
+            self.np[i] = (0, 0, 0)
+        self.np.write()
+
     def set_np(self, i, rgb_tuple):
         self.np[i] = rgb_tuple
         self.np.write()
 
     def set_np_rpm(self, rpm):
+        self.off()
+
         upto = rpm // 1000
-        for i in range(24, self.n):
-            if i < upto + 24:
-                self.np[i] = (2, 2, 0)
-            else:
-                self.np[i] = (0, 0, 0)
+        for i in range(24, upto + 24):
+            self.np[i] = (2, 2, 0)
 
         self.np.write()
 
     def set_np_compass(self, heading):
-        # PLACEHOLDER
         # TODO Update logic
-        for i in range(24, self.n):
-            self.np[i] = (0, 0, 0)
+
+        self.off()
 
         i = int(self.map_range(heading, (0, 360), (34, 24)))
-
         self.np[i] = (0, 0, 5)
 
         self.np.write()
 
-    def update(self, value):
-        if self.mode == MODE_RPM:
-            self.set_np_rpm(value)
-        elif self.mode == MODE_COMPASS:
-            self.set_np_compass(value)
+    def set_np_blend(self, rpm, heading):
+        # TODO Update logic
 
-    def off(self):
-        for i in range(self.n):
-            self.np[i] = (0, 0, 0)
+        self.off()
+
+        upto = rpm // 1000
+        for i in range(24, upto + 24):
+            self.np[i] = (2, 2, 0)
+
+        i = int(self.map_range(heading, (0, 360), (34, 24)))
+        self.np[i] = (0, 0, 5)
+
         self.np.write()
+
+    def update(self, rpm, heading):
+        # TODO Update logic
+
+        if self.mode == MODE_RPM:
+            self.set_np_rpm(rpm)
+        elif self.mode == MODE_COMPASS:
+            self.set_np_compass(heading)
+        elif self.mode == MODE_BLEND:
+            self.set_np_blend(rpm, heading)
 
     def __enter__(self):
         return self
