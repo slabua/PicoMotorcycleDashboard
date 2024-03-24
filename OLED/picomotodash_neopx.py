@@ -40,18 +40,20 @@ class NEOPX:
         self.np.write()
 
     def set_np_rpm(self, rpm):
-        self.off()
-
         upto = rpm // 1000
-        for i in range(24, upto + 24):
-            self.np[i] = (2, 2, 0)
+        for i in range(24, self.n):
+            if i < upto + 24:
+                self.np[i] = (2, 2, 0)
+            else:
+                self.np[i] = (0, 0, 0)
 
         self.np.write()
 
     def set_np_compass(self, heading):
+        # PLACEHOLDER
         # TODO Update logic
-
-        self.off()
+        for i in range(24, self.n):
+            self.np[i] = (0, 0, 0)
 
         i = int(self.map_range(heading, (0, 360), (34, 24)))
         self.np[i] = (0, 0, 5)

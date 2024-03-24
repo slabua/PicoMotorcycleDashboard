@@ -37,10 +37,6 @@ display.contrast(0x80)
 display.fill(0)
 display.show()
 
-# RPM setup
-RPM_ESTIMATE = 0
-PWM2RPM_FACTOR = 10
-
 # GPS setup
 gps = pmdGPS(local_offset=9, location_formatting="dd")
 
@@ -53,8 +49,69 @@ headings = []
 HEADING = 0
 labels = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"]
 
+# Neopixel setup
+PIN_NUM = 3
+NUM_LEDS = 37
+neopixel_ring = pdmNEOPX(pin=PIN_NUM, n=NUM_LEDS)
+
+# RPM setup
+RPM_ESTIMATE = 0
+PWM2RPM_FACTOR = 10
+
+
+# Utility functions
+log_file = open("log.csv", "a")
+
+
+def _log(data):
+    log_file.write(str(data) + "\n")
+    log_file.flush()
+
+
+def map_range(value, in_range, out_range):
+    (a, b), (c, d) = in_range, out_range
+    return (value - a) / (b - a) * (d - c) + c
+
 
 def moving_avg(n):
+    global headings
+
+    if len(headings) >= n:
+        headings.pop(0)
+
+    headings.append(HEADING)
+
+    return sum(headings) / len(headings)
+
+
+def normalise_avg(avg):
+    # Check whether the array contains both positive and negative numbers
+    has_positive = any(num > 270 for num in headings)
+    has_negative = any(num < 90 for num in headings)
+
+    if avg > 180:
+        np_val = 360 - avg
+    else:
+        np_val = avg
+
+    if has_positive and has_negative:
+        neopixel_ring.set_np(0, (0, 0, 32))
+
+        tmp_headings = []
+        for h in headings:
+            if h > 270:
+                h = h - 360
+            tmp_headings.append(h)
+        avg = ((sum(tmp_headings) / len(tmp_headings)) + 360) % 360
+
+        return avg
+
+    neopixel_ring.set_np(0, (0, round(map_range(np_val, (180, 0), (0, 32))), 0))
+
+    return avg
+
+
+def moving_avg_backup(n):
     global headings
 
     if len(headings) >= n:
@@ -88,26 +145,6 @@ def moving_avg(n):
     neopixel_ring.set_np(0, (0, round(map_range(np_val, (180, 0), (0, 32))), 0))
 
     return avg
-
-
-# Neopixel setup
-PIN_NUM = 3
-NUM_LEDS = 37
-neopixel_ring = pdmNEOPX(pin=PIN_NUM, n=NUM_LEDS)
-
-
-# Utility functions
-log_file = open("log.csv", "a")
-
-
-def _log(data):
-    log_file.write(str(data) + "\n")
-    log_file.flush()
-
-
-def map_range(value, in_range, out_range):
-    (a, b), (c, d) = in_range, out_range
-    return (value - a) / (b - a) * (d - c) + c
 
 
 def show_logo():
@@ -446,6 +483,7 @@ try:
             read_mpu()
             HEADING = mpu.heading
             HEADING = moving_avg(5)  # 9
+            HEADING = normalise_avg(HEADING)
 
             # neopixel_ring.update(RPM_ESTIMATE, HEADING)
 
