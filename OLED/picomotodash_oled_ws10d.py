@@ -55,6 +55,7 @@ NUM_LEDS = 37
 neopixel_ring = pdmNEOPX(pin=PIN_NUM, n=NUM_LEDS)
 
 # RPM setup
+rpm_estimates = []
 RPM_ESTIMATE = 0
 PWM2RPM_FACTOR = 10
 
@@ -73,15 +74,12 @@ def map_range(value, in_range, out_range):
     return (value - a) / (b - a) * (d - c) + c
 
 
-def moving_avg(n):
-    global headings
+def moving_avg(value, array, n):
+    if len(array) >= n:
+        array.pop(0)
+    array.append(value)
 
-    if len(headings) >= n:
-        headings.pop(0)
-
-    headings.append(HEADING)
-
-    return sum(headings) / len(headings)
+    return sum(array) / len(array)
 
 
 def normalise_avg(avg):
@@ -422,6 +420,9 @@ pwm2.duty_u16(32768)
 
 def startup_rpm():
     global RPM_ESTIMATE
+    global rpm_estimates
+
+    rpm_estimates = []
 
     while RPM_ESTIMATE < 12000:
         sleep_us(50)
@@ -433,6 +434,9 @@ def startup_rpm():
 
 def decrease_rpm():
     global RPM_ESTIMATE
+    global rpm_estimates
+
+    rpm_estimates = []
 
     while RPM_ESTIMATE > 1:
         sleep_us(200)
@@ -443,6 +447,7 @@ def thread1(PWM2RPM_FACTOR):
     from utime import sleep
 
     global RPM_ESTIMATE
+    global rpm_estimates
 
     sleep(0.5)
 
@@ -454,7 +459,7 @@ def thread1(PWM2RPM_FACTOR):
         # read_gps()
 
         rpm.estimate_rpm()
-        RPM_ESTIMATE = rpm.RPM_ESTIMATE
+        RPM_ESTIMATE = moving_avg(rpm.RPM_ESTIMATE, rpm_estimates, 10)
 
         if rpm.timeout:
             decrease_rpm()
@@ -482,7 +487,7 @@ try:
 
             read_mpu()
             HEADING = mpu.heading
-            HEADING = moving_avg(5)  # 9
+            HEADING = moving_avg(HEADING, headings, 5)  # 9
             HEADING = normalise_avg(HEADING)
 
             # neopixel_ring.update(RPM_ESTIMATE, HEADING)
