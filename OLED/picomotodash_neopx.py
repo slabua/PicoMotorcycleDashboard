@@ -26,6 +26,8 @@ class NEOPX:
 
         self.mode = MODE_COMPASS
 
+        self.off()
+
     def map_range(self, value, in_range, out_range):
         (a, b), (c, d) = in_range, out_range
         return (value - a) / (b - a) * (d - c) + c
