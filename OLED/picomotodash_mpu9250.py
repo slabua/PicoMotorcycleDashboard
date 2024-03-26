@@ -49,6 +49,9 @@ class MPU:
         print("Calibration Completed.")
 
         self.imu = []
+        self.accel = ()
+        self.gyro = ()
+        self.mag = ()
 
         self.dt = 0
         self.comp_pc = 0.99
@@ -193,6 +196,10 @@ class MPU:
             m[1],
             m[2],
         ]
+
+        self.accel = (self.imu[0], self.imu[1], self.imu[2])
+        self.gyro = (self.imu[3], self.imu[4], self.imu[5])
+        self.mag = (self.imu[6], self.imu[7], self.imu[8])
 
         self.roll, self.pitch = self.get_roll_pitch_my(alpha=self.comp_pc)
         self.heading = self.get_heading(
