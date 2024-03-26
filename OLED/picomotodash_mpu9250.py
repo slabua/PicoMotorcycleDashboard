@@ -354,7 +354,7 @@ class MPU:
 
 
 if __name__ == "__main__":
-    mpu9250 = MPU()
+    mpu = MPU()
 
     try:
         while True:
@@ -362,12 +362,18 @@ if __name__ == "__main__":
             #     "\r\n /-------------------------------------------------------------/ \r\n"
             # )
             # print(mpu9250.update())
-            mpu9250.update_mpu()
+            mpu.update_mpu()
 
             # pitch, roll, heading = mpu9250.get_roll_pitch_v1(mpu9250.lowpass_pc)
-            print("roll " + str(mpu9250.roll))
-            print("pitch " + str(mpu9250.pitch))
-            print("heading " + str(mpu9250.heading))
+            # print("roll " + str(mpu.roll))
+            # print("pitch " + str(mpu.pitch))
+            # print("heading " + str(mpu.heading))
+
+            print(
+                "Heading, Roll, Pitch: {:7.3f} {:7.3f} {:7.3f}".format(
+                    mpu.heading, mpu.roll, mpu.pitch
+                )
+            )
 
             # pitch, roll = mpu9250.get_roll_pitch_v2(mpu9250.comp_pc)
             # print(mpu9250.get_roll_pitch_v3(mpu9250.comp_pc))
