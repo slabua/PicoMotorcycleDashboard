@@ -5,10 +5,12 @@
 __author__ = "Salvatore La Bua"
 
 
+from fusion import Fusion
 from machine import I2C, Pin
 from math import atan2, copysign, cos, sin, sqrt
 from mpu6500 import MPU6500
 from mpu9250 import MPU9250
+from orientate import orientate
 from ujson import dump, load
 from utime import sleep, ticks_diff, ticks_us
 
@@ -21,6 +23,8 @@ scl = Pin(7)
 RAD2DEG = 180 / 3.1415
 DEG2RAD = 3.1415 / 180
 
+fuse = Fusion()
+
 
 class MPU:
 
@@ -31,6 +35,7 @@ class MPU:
         sda=sda,
         freq=400000,
         calib_ag=True,
+        calib_m=True,
         tiltcomp=True,
         truenorth=True,
         parent=None,
@@ -44,9 +49,10 @@ class MPU:
         mpu6500 = MPU6500(i2c=i2c, accel_sf=1, gyro_sf=1)
         self.mpu = MPU9250(i2c=i2c, mpu6500=mpu6500)
 
-        print("Calibrating Magnetometer...")
-        self.mpu.ak8963.calibrate(count=100)
-        print("Calibration Completed.")
+        if calib_m:
+            print("Calibrating Magnetometer...")
+            self.mpu.ak8963.calibrate(count=100)
+            print("Calibration Completed.")
 
         self.imu = []
         self.accel = ()
@@ -180,7 +186,7 @@ class MPU:
     def lowpass(self, alpha, new_value, old_value):
         return (alpha * new_value) + (1.0 - alpha) * old_value
 
-    def update_mpu(self):
+    def update_mpu(self, madgwick=False):
         a = self.mpu.acceleration
         g = self.mpu.gyro
         m = self.mpu.magnetic
@@ -201,10 +207,13 @@ class MPU:
         self.gyro = (self.imu[3], self.imu[4], self.imu[5])
         self.mag = (self.imu[6], self.imu[7], self.imu[8])
 
-        self.roll, self.pitch = self.get_roll_pitch_my(alpha=self.comp_pc)
-        self.heading = self.get_heading(
-            alpha=self.lowpass_pc, tiltcomp=self.tiltcomp, truenorth=self.truenorth
-        )
+        if madgwick:
+            self.roll, self.pitch, self.heading = self.madgwick()
+        else:
+            self.roll, self.pitch = self.get_roll_pitch_my(alpha=self.comp_pc)
+            self.heading = self.get_heading(
+                alpha=self.lowpass_pc, tiltcomp=self.tiltcomp, truenorth=self.truenorth
+            )
 
     def get_roll_pitch(self) -> float:
         """Returns the readings from the sensor"""
@@ -322,6 +331,20 @@ class MPU:
         heading = (180 - heading) % 360
 
         return heading
+
+    def madgwick(self):
+        # fuse.update(self.imu.accel, self.imu.gyro, self.imu.mag)
+        fuse.update(
+            *orientate(
+                (0, 1, 2),
+                (False, False, True),
+                self.imu.accel,
+                self.imu.gyro,
+                self.imu.mag,
+            )
+        )
+
+        return fuse.roll, fuse.pitch, fuse.heading
 
     def __enter__(self):
         return self
