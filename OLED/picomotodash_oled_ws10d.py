@@ -28,6 +28,19 @@ from utime import sleep, sleep_us
 gc.enable()
 gc.threshold(100000)
 
+# GPIO setup
+"""
+pwm0 = PWM(Pin(0))
+pwm0.freq(300)
+pwm0.duty_u16(32768)
+pwm1 = PWM(Pin(1))
+pwm1.freq(600)
+pwm1.duty_u16(32768)
+"""
+pwm2 = PWM(Pin(2))
+pwm2.freq(800)
+pwm2.duty_u16(32768)
+
 
 # Display setup
 key0 = Pin(15, Pin.IN, Pin.PULL_UP)
@@ -61,89 +74,37 @@ RPM_ESTIMATE = 0
 PWM2RPM_FACTOR = 10
 
 
-# Utility functions
-# log_file = open("log.csv", "a")
+def read_gps():
+    gps.update_gps(verbose=False)
 
 
-# def _log(data):
-#     log_file.write(str(data) + "\n")
-#     log_file.flush()
+def read_mpu():
+    mpu.update_mpu()
 
 
-# def map_range(value, in_range, out_range):
-#     (a, b), (c, d) = in_range, out_range
-#     return (value - a) / (b - a) * (d - c) + c
+def startup_rpm():
+    global RPM_ESTIMATE
+    global rpm_estimates
+
+    rpm_estimates = []
+
+    while RPM_ESTIMATE < 12000:
+        sleep_us(50)
+        RPM_ESTIMATE += 1
+    while RPM_ESTIMATE > 1:
+        sleep_us(50)
+        RPM_ESTIMATE -= 1
 
 
-# def moving_avg(value, array, n):
-#     if len(array) >= n:
-#         array.pop(0)
-#     array.append(value)
+def decrease_rpm():
+    global RPM_ESTIMATE
+    global rpm_estimates
 
-#     return sum(array) / len(array)
+    rpm_estimates = []
 
-
-# def normalise_avg(avg):
-#     # Check whether the array contains both positive and negative numbers
-#     has_positive = any(num > 270 for num in headings)
-#     has_negative = any(num < 90 for num in headings)
-
-#     if avg > 180:
-#         np_val = 360 - avg
-#     else:
-#         np_val = avg
-
-#     if has_positive and has_negative:
-#         neopixel_ring.set_np(0, (0, 0, 32))
-
-#         tmp_headings = []
-#         for h in headings:
-#             if h > 270:
-#                 h = h - 360
-#             tmp_headings.append(h)
-#         avg = ((sum(tmp_headings) / len(tmp_headings)) + 360) % 360
-
-#         return avg
-
-#     neopixel_ring.set_np(0, (0, round(map_range(np_val, (180, 0), (0, 32))), 0))
-
-#     return avg
-
-
-# def moving_avg_backup(n):
-#     global headings
-
-#     if len(headings) >= n:
-#         headings.pop(0)
-
-#     headings.append(HEADING)
-
-#     # Check whether the array contains both positive and negative numbers
-#     has_positive = any(num > 270 for num in headings)
-#     has_negative = any(num < 90 for num in headings)
-
-#     avg = sum(headings) / len(headings)
-
-#     if avg > 180:
-#         np_val = 360 - avg
-#     else:
-#         np_val = avg
-
-#     if has_positive and has_negative:
-#         neopixel_ring.set_np(0, (0, 0, 32))
-
-#         tmp_headings = []
-#         for h in headings:
-#             if h > 270:
-#                 h = h - 360
-#             tmp_headings.append(h)
-#         avg = ((sum(tmp_headings) / len(tmp_headings)) + 360) % 360
-
-#         return avg
-
-#     neopixel_ring.set_np(0, (0, round(map_range(np_val, (180, 0), (0, 32))), 0))
-
-#     return avg
+    while RPM_ESTIMATE > 1:
+        sleep_us(200)
+        RPM_ESTIMATE -= 1
 
 
 def show_logo():
@@ -236,14 +197,6 @@ def show_logo():
     # display.invert(0)
     display.fill(0)
     display.show()
-
-
-def read_gps():
-    gps.update_gps(verbose=False)
-
-
-def read_mpu():
-    mpu.update_mpu()
 
 
 def draw_compass():
@@ -403,45 +356,6 @@ def draw_rpm():
     display.text("R:" + f"{str(round(RPM_ESTIMATE)):>5}", 69, 52, 1)
 
     neopixel_ring.set_np_rpm(RPM_ESTIMATE)
-
-
-# GPIO setup
-"""
-pwm0 = PWM(Pin(0))
-pwm0.freq(300)
-pwm0.duty_u16(32768)
-pwm1 = PWM(Pin(1))
-pwm1.freq(600)
-pwm1.duty_u16(32768)
-"""
-pwm2 = PWM(Pin(2))
-pwm2.freq(800)
-pwm2.duty_u16(32768)
-
-
-def startup_rpm():
-    global RPM_ESTIMATE
-    global rpm_estimates
-
-    rpm_estimates = []
-
-    while RPM_ESTIMATE < 12000:
-        sleep_us(50)
-        RPM_ESTIMATE += 1
-    while RPM_ESTIMATE > 1:
-        sleep_us(50)
-        RPM_ESTIMATE -= 1
-
-
-def decrease_rpm():
-    global RPM_ESTIMATE
-    global rpm_estimates
-
-    rpm_estimates = []
-
-    while RPM_ESTIMATE > 1:
-        sleep_us(200)
-        RPM_ESTIMATE -= 1
 
 
 def thread1(PWM2RPM_FACTOR):
