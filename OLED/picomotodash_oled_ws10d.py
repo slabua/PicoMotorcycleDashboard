@@ -20,7 +20,7 @@ from picomotodash_gps import GPS as pmdGPS
 from picomotodash_mpu9250 import MPU as pmdMPU
 from picomotodash_neopx import NEOPX as pdmNEOPX
 from picomotodash_rpm import RPM as pmdRPM
-from picomotodash_utils import moving_avg, normalise_avg
+from picomotodash_utils import moving_avg, normalise_avg, read_gps, read_mpu
 
 from machine import Pin, PWM, SPI
 from utime import sleep, sleep_us
@@ -72,14 +72,6 @@ neopixel_ring = pdmNEOPX(pin=PIN_NUM, n=NUM_LEDS)
 PWM2RPM_FACTOR = 10
 RPM_ESTIMATE = 0
 rpm_estimates = []
-
-
-def read_gps():
-    gps.update_gps(verbose=False)
-
-
-def read_mpu():
-    mpu.update_mpu()
 
 
 def startup_rpm():
@@ -398,9 +390,9 @@ try:
 
         if key0.value() == 1:
             # sleep(0.1)
-            read_gps()
+            read_gps(gps)
 
-            read_mpu()
+            read_mpu(mpu)
             HEADING = mpu.heading
             HEADING = moving_avg(HEADING, headings, 5)  # 9
             HEADING = normalise_avg(HEADING, headings, neopixel_ring)

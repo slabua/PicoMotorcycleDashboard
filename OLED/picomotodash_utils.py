@@ -54,3 +54,11 @@ def normalise_avg(avg, headings, neopixel_ring=None):
         neopixel_ring.set_np(0, (0, round(map_range(np_val, (180, 0), (0, 32))), 0))
 
     return avg
+
+
+def read_gps(gps):
+    gps.update_gps(verbose=False)
+
+
+def read_mpu(mpu):
+    mpu.update_mpu()
