@@ -59,8 +59,8 @@ mpu = pmdMPU()
 # x_off = 28099.99
 # y_off = 30178.57
 # z_off = 43987.61
-headings = []
 HEADING = 0
+headings = []
 labels = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"]
 
 # Neopixel setup
@@ -69,9 +69,9 @@ NUM_LEDS = 37
 neopixel_ring = pdmNEOPX(pin=PIN_NUM, n=NUM_LEDS)
 
 # RPM setup
-rpm_estimates = []
-RPM_ESTIMATE = 0
 PWM2RPM_FACTOR = 10
+RPM_ESTIMATE = 0
+rpm_estimates = []
 
 
 def read_gps():
