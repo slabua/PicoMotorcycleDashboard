@@ -354,38 +354,11 @@ def draw_rpm():
     neopixel_ring.set_np_rpm(RPM_ESTIMATE)
 
 
-def thread1(PWM2RPM_FACTOR):
-    from utime import sleep
-
-    global RPM_ESTIMATE
-    global rpm_estimates
-
-    sleep(0.5)
-
-    rpm = pmdRPM(pin=22, factor=PWM2RPM_FACTOR)
-
-    startup_rpm()
-
-    rpm.start()
-
-    while True:
-        # read_gps()
-
-        # rpm.estimate_rpm()
-        RPM_ESTIMATE = moving_avg(rpm.RPM_ESTIMATE, rpm_estimates, 10)
-        # print(RPM_ESTIMATE)
-
-        if rpm.timeout:
-            decrease_rpm()
-            rpm.reset()
-
-
 def read_rpm():
     global RPM_ESTIMATE
     global rpm_estimates
 
     RPM_ESTIMATE = moving_avg(rpm.RPM_ESTIMATE, rpm_estimates, 10)
-    # print(RPM_ESTIMATE)
 
     if rpm.timeout:
         # rpm.stop()
@@ -403,8 +376,6 @@ show_logo()
 gc.collect()
 # sleep(0.5)
 
-# _thread.start_new_thread(thread1, [PWM2RPM_FACTOR])
-# startup_rpm()
 _thread.start_new_thread(startup_rpm, [])
 
 rpm.start()

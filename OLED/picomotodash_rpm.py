@@ -22,7 +22,6 @@ class RPM:
         self.prev_interrupt = ticks_us()
         self.durations = []
 
-        # self.pulses = 0
         self.RPM_ESTIMATE = 0
         self.factor = factor
 
@@ -89,71 +88,10 @@ class RPM:
 
         self.RPM_ESTIMATE = freq * self.factor
 
-    # def count(self, _):
-    #     self.pulses += 1
-
     def set_timeout(self, _):
-        # print("TIMEOUT_CHECK")
-        # self.RPM_ESTIMATE = self.pulses * self.factor * 1
-        # self.pulses = 0
-
-        # state = disable_irq()
-        # self.prev_interrupt = self.curr_interrupt
-
         if ticks_us() - self.curr_interrupt > self.timeout_max:
             self.stop()
             self.timeout = True
-
-        # self.curr_interrupt = ticks_us()
-        # enable_irq(state)
-
-    # def estimate_rpm(self):
-
-    #     durations = []
-    #     if self.pwm.value() == 1:
-    #         cycle_start = ticks_us()
-
-    #         for _ in range(self.n_repeats):
-    #             count = 0
-    #             d_start = ticks_us()
-    #             while self.pwm.value() == 1:
-    #                 count += 1
-    #                 sleep_us(100)
-    #                 if count > self.timeout_max:
-    #                     self.timeout = True
-    #                     return
-    #             durations.append(ticks_us() - d_start)
-    #             while self.pwm.value() == 0:
-    #                 count += 1
-    #                 sleep_us(100)
-    #                 if count > self.timeout_max:
-    #                     self.timeout = True
-    #                     return
-    #         cycle_stop = ticks_us()
-    #         cycle_duration = cycle_stop - cycle_start
-    #         cycle_avg = cycle_duration / self.n_repeats
-    #         freq = 1000000 / cycle_avg
-    #         duration_avg = sum(durations) / len(durations)
-
-    #         repeat_factor = ((50 - 20) / (1500 - 150)) * freq + (  # y = mx + q
-    #             50 - ((50 - 20) / (1500 - 150) * 1500)
-    #         )
-    #         self.n_repeats = (
-    #             int(freq / repeat_factor) if int(freq / repeat_factor) != 0 else 1
-    #         )
-    #         self.duty = duration_avg / cycle_avg * 100
-    #         self.RPM_ESTIMATE = freq * self.factor
-
-    #         # print("RPM: {:.2f}".format(self.RPM_ESTIMATE), self.n_repeats, repeat_factor)
-
-    #     else:
-    #         count = 0
-    #         while self.pwm.value() == 0:
-    #             count += 1
-    #             sleep_us(100)
-    #             if count > self.timeout_max:
-    #                 self.timeout = True
-    #                 return
 
     def __enter__(self):
         return self
@@ -173,7 +111,6 @@ if __name__ == "__main__":
     rpm = RPM(pin=pin, factor=PWM2RPM_FACTOR, autostart=True)
 
     while True:
-        # rpm.estimate_rpm()
         if not rpm.timeout and rpm.RPM_ESTIMATE > 0:
             print(rpm.n_repeats, rpm.RPM_ESTIMATE)
         else:
