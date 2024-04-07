@@ -14,6 +14,21 @@ def _log(data):
     log_file.flush()
 
 
+def ds_scan_roms(ds_sensor, resolution):
+    roms = ds_sensor.scan()
+    for rom in roms:
+        if resolution == 9:
+            config = b"\x00\x00\x1f"
+        elif resolution == 10:
+            config = b"\x00\x00\x3f"
+        elif resolution == 11:
+            config = b"\x00\x00\x5f"
+        elif resolution == 12:
+            config = b"\x00\x00\x7f"
+        ds_sensor.write_scratch(rom, config)
+    return roms
+
+
 def map_range(value, in_range, out_range):
     (a, b), (c, d) = in_range, out_range
     return (value - a) / (b - a) * (d - c) + c
@@ -56,9 +71,19 @@ def normalise_avg(avg, headings, neopixel_ring=None):
     return avg
 
 
+def read_adc(adc):
+    return adc.read_u16()
+
+
 def read_gps(gps):
     gps.update_gps(verbose=False)
 
 
 def read_mpu(mpu):
     mpu.update_mpu()
+
+
+def read_builtin_temp(adc):
+    CONVERSION_FACTOR = 3.3 / 65535
+    reading = read_adc(adc) * CONVERSION_FACTOR
+    return 27 - (reading - 0.706) / 0.001721
