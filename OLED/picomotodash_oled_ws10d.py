@@ -72,11 +72,13 @@ neopixel_ring = pdmNEOPX(pin=PIN_NUM, n=NUM_LEDS)
 PWM2RPM_FACTOR = 10
 RPM_ESTIMATE = 0
 rpm_estimates = []
+pause_rpm_readings = True
 
 
 def startup_rpm():
     global RPM_ESTIMATE
     global rpm_estimates
+    global pause_rpm_readings
 
     rpm_estimates = []
 
@@ -86,6 +88,8 @@ def startup_rpm():
     while RPM_ESTIMATE > 1:
         sleep_us(50)
         RPM_ESTIMATE -= 1
+
+    pause_rpm_readings = False
 
 
 def decrease_rpm():
@@ -350,27 +354,21 @@ def draw_rpm():
     neopixel_ring.set_np_rpm(RPM_ESTIMATE)
 
 
-def thread1(PWM2RPM_FACTOR):
-    from utime import sleep
-
+def read_rpm():
     global RPM_ESTIMATE
     global rpm_estimates
 
-    sleep(0.5)
+    RPM_ESTIMATE = moving_avg(rpm.RPM_ESTIMATE, rpm_estimates, 10)
 
-    rpm = pmdRPM(pin=22, factor=PWM2RPM_FACTOR)
+    if rpm.timeout:
+        # rpm.stop()
+        # decrease_rpm()
+        # rpm_estimates = []
+        rpm.reset()
+        # rpm.start()
 
-    startup_rpm()
 
-    while True:
-        # read_gps()
-
-        rpm.estimate_rpm()
-        RPM_ESTIMATE = moving_avg(rpm.RPM_ESTIMATE, rpm_estimates, 10)
-
-        if rpm.timeout:
-            decrease_rpm()
-            rpm.reset()
+rpm = pmdRPM(pin=22, factor=PWM2RPM_FACTOR)
 
 
 show_logo()
@@ -378,7 +376,9 @@ show_logo()
 gc.collect()
 # sleep(0.5)
 
-_thread.start_new_thread(thread1, [PWM2RPM_FACTOR])
+_thread.start_new_thread(startup_rpm, [])
+
+rpm.start()
 
 PAGE_ID = 0
 PAGES = 4
@@ -396,6 +396,9 @@ try:
             HEADING = mpu.heading
             HEADING = moving_avg(HEADING, headings, 5)  # 9
             HEADING = normalise_avg(HEADING, headings, neopixel_ring)
+
+            if not pause_rpm_readings:
+                read_rpm()
 
             # neopixel_ring.update(RPM_ESTIMATE, HEADING)
 
