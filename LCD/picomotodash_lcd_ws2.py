@@ -14,11 +14,12 @@ import _thread
 import gc
 import math
 
-import ds18x20
-import onewire
-import picomotodash_env as pmdenv
-import qrcode
 from machine import ADC, Pin, PWM, Timer  # enable_irq,; disable_irq,
+import picomotodash_env as pmdenv
+from picomotodash_ds18x20 import DS18X20 as pmdDS18X20
+from picomotodash_utils import map_range, read_adc, read_builtin_temp
+import qrcode
+
 
 from picographics import (
     DISPLAY_PICO_DISPLAY_2,
@@ -27,7 +28,6 @@ from picographics import (
 )
 from utime import (
     sleep,
-    sleep_ms,
     sleep_us,
     ticks_ms,
     ticks_us,
@@ -182,35 +182,6 @@ def set_in_use(_):
 #     led.set_rgb(0, 0, 0)
 
 
-def acq_adc(adc):
-    return adc.read_u16()
-
-
-def acq_temp(adc):
-    CONVERSION_FACTOR = 3.3 / 65535
-    reading = acq_adc(adc) * CONVERSION_FACTOR
-    return 27 - (reading - 0.706) / 0.001721
-
-
-def scale_value(value, min_value, max_value, max_range):
-    return ((value - 0) / (max_range - 0)) * (max_value - min_value) + min_value
-
-
-def ds_scan_roms(ds_sensor, resolution):
-    roms = ds_sensor.scan()
-    for rom in roms:
-        if resolution == 9:
-            config = b"\x00\x00\x1f"
-        elif resolution == 10:
-            config = b"\x00\x00\x3f"
-        elif resolution == 11:
-            config = b"\x00\x00\x5f"
-        elif resolution == 12:
-            config = b"\x00\x00\x7f"
-        ds_sensor.write_scratch(rom, config)
-    return roms
-
-
 def set_temperature_pen(reading):
     if reading < TEMP_TH[0]:
         display.set_pen(bluePen)
@@ -252,8 +223,7 @@ def draw_qr_code(ox, oy, size, code):
 temp_builtin = ADC(4)  # Built-in temperature sensor
 
 ds_pin = Pin(1)  # 1-Wire temperature sensors
-ds_sensor = ds18x20.DS18X20(onewire.OneWire(ds_pin))
-roms = ds_scan_roms(ds_sensor, DS_RESOLUTION)
+ds_sensor = pmdDS18X20(pin=ds_pin, resolution=DS_RESOLUTION)
 
 adc0 = ADC(Pin(26, Pin.IN))  # Battery adc
 adc1 = ADC(Pin(27, Pin.IN))  # Fuel adc
@@ -611,7 +581,7 @@ def draw_home_layout(pen):
 
 
 def draw_home_fuel():
-    reading = scale_value(acq_adc(adc1), 0, 100, 65535)
+    reading = map_range(read_adc(adc1), (0, 65535), (0, 100))
 
     if reading < FUEL_RESERVE:
         display.set_pen(redPen)
@@ -636,7 +606,7 @@ def draw_home_fuel():
 
 
 def draw_home_battery():
-    reading = scale_value(acq_adc(adc0), 0, 16, 65535)
+    reading = map_range(read_adc(adc0), (0, 65535), (0, 16))
 
     set_battery_pen(reading)
     display.text(
@@ -652,15 +622,14 @@ def draw_home_temperature():
     global temp_x_pos
     global temp_x_shift
 
-    if not onewire_sensors:
+    if onewire_sensors == 0:
         temp_x_shift = 0
 
     if temp_x_shift == 0:
         if temp_id == 0:
-            temperature = acq_temp(temp_builtin)
+            temperature = read_builtin_temp(temp_builtin)
         else:
-            ds_sensor.convert_temp()
-            temperature = ds_sensor.read_temp(roms[temp_id - 1])
+            temperature = ds_sensor.update_temps()[temp_id - 1]
 
         set_temperature_pen(temperature)
         display.text(
@@ -683,7 +652,7 @@ def draw_home_temperature():
         temp_x_pos += temp_x_shift
         if temp_x_pos < -150:
             temp_x_pos = 250
-        temperature = acq_temp(temp_builtin)
+        temperature = read_builtin_temp(temp_builtin)
 
         set_temperature_pen(temperature)
         display.text(
@@ -694,18 +663,14 @@ def draw_home_temperature():
             round(h_factor * 3),
         )
 
-        try:
-            ds_sensor.convert_temp()
-        except onewire.OneWireError:
-            pass
+        temperatures = ds_sensor.update_temps()
 
-        for ows in range(onewire_sensors):
-            temperature = ds_sensor.read_temp(roms[ows])
+        for ti in range(len(temperatures)):
 
-            set_temperature_pen(temperature)
+            set_temperature_pen(temperatures[ti])
             display.text(
-                "{:.2f}".format(temperature),
-                round(w_factor * temp_x_pos) + (temp_x_tn * (ows + 1)),
+                "{:.2f}".format(temperatures[ti]),
+                round(w_factor * temp_x_pos) + (temp_x_tn * (ti + 1)),
                 8 + 2 * round(h_factor * 34),
                 width,
                 round(h_factor * 3),
@@ -713,7 +678,7 @@ def draw_home_temperature():
 
 
 def draw_home_rpm():
-    # reading = scale_value(acq_adc(adc2), 0, RPM_MAX, 65535)
+    # reading = map_range(read_adc(adc2), (0, 65535), (0, RPM_MAX))
     reading = RPM_ESTIMATE
 
     at_redline_width = round((width - 100 - CLIP_MARGIN) * RPM_REDLINE / RPM_MAX)
@@ -795,7 +760,7 @@ def screen_home():
 def screen_battery():
     display_clear()
 
-    reading = scale_value(acq_adc(adc0), 0, 16, 65535)
+    reading = map_range(read_adc(adc0), (0, 65535), (0, 16))
     print("ADC0: " + str(reading))
 
     set_battery_pen(reading)
@@ -885,7 +850,7 @@ def screen_battery():
 def screen_fuel():
     display_clear()
 
-    reading = scale_value(acq_adc(adc1), 0, 100, 65535)
+    reading = map_range(read_adc(adc1), (0, 65535), (0, 100))
     print("ADC1: " + str(reading))
 
     if reading < FUEL_RESERVE:
@@ -931,18 +896,12 @@ def screen_temperature():
 
     display_clear()
 
-    temperatures = []
-    if onewire_sensors:
-        ds_sensor.convert_temp()
-    sleep_ms(round(750 / (2 ** (12 - DS_RESOLUTION))))
-    temperatures.append(acq_temp(temp_builtin))
-    for ows in range(onewire_sensors):
-        temperatures.append(ds_sensor.read_temp(roms[ows]))
+    temperatures = ds_sensor.update_temps()
 
-    for t in range(len(temperatures)):
-        if len(temperature_matrix[t]) >= (width / TEMP_BAR_OFFSET):
-            temperature_matrix[t].pop(0)
-        temperature_matrix[t].append(temperatures[t])
+    for ti in range(len(temperatures)):
+        if len(temperature_matrix[ti]) >= (width / TEMP_BAR_OFFSET):
+            temperature_matrix[ti].pop(0)
+        temperature_matrix[ti].append(temperatures[ti])
 
     if isinstance(temperatures[temp_id], float):
         print("T" + str(temp_id) + ": " + str(temperatures[temp_id]))
@@ -978,7 +937,7 @@ def screen_temperature():
 def screen_rpm():
     display_clear()
 
-    # reading = scale_value(acq_adc(adc2), 0, RPM_MAX, 65535)
+    # reading = map_range(read_adc(adc2), (0, 65535), (0, RPM_MAX))
     # print("ADC2: " + str(reading))
     reading = RPM_ESTIMATE
     print("PWM0: " + str(reading))
@@ -1144,10 +1103,10 @@ while True:
 
     # in_use_led(in_use)
 
-    roms = ds_scan_roms(ds_sensor, DS_RESOLUTION)
-    if len(roms) != onewire_sensors:
+    ds_sensor.update_roms()
+    if len(ds_sensor.roms) != onewire_sensors:
         print("The number of connected 1-Wire devices has been updated.")
-        onewire_sensors = len(roms)
+        onewire_sensors = len(ds_sensor.roms)
         # blink_led(0.2, 255, 255, 0)
 
     if current_screen not in [0, 1, 2, 3, 4, 5]:
