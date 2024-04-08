@@ -18,7 +18,7 @@ import sh1107
 
 from picomotodash_gps import GPS as pmdGPS
 from picomotodash_mpu9250 import MPU as pmdMPU
-from picomotodash_neopx import NEOPX as pdmNEOPX
+from picomotodash_neopx import NEOPX as pmdNEOPX
 from picomotodash_rpm import RPM as pmdRPM
 from picomotodash_utils import moving_avg, normalise_avg, read_gps, read_mpu
 
@@ -66,7 +66,7 @@ labels = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"]
 # Neopixel setup
 PIN_NUM = 3
 NUM_LEDS = 37
-neopixel_ring = pdmNEOPX(pin=PIN_NUM, n=NUM_LEDS)
+neopixel_ring = pmdNEOPX(pin=PIN_NUM, n=NUM_LEDS)
 
 # RPM setup
 PWM2RPM_FACTOR = 10
