@@ -54,7 +54,7 @@ class DS18X20:
                 sleep_ms(round(750 / (2 ** (12 - DS_RESOLUTION))))
 
                 self.temperatures = []
-                for r in self.roms:
+                for r in range(len(self.roms)):
                     self.temperatures.append(self.ds_sensor.read_temp(self.roms[r]))
 
         return self.temperatures
