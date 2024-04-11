@@ -56,6 +56,16 @@ def normalise_avg(avg, headings, neopixel_ring=None):
     return avg
 
 
+def read_adc(adc):
+    return adc.read_u16()
+
+
+def read_builtin_temp(adc):
+    CONVERSION_FACTOR = 3.3 / 65535
+    reading = read_adc(adc) * CONVERSION_FACTOR
+    return 27 - (reading - 0.706) / 0.001721
+
+
 def read_gps(gps):
     gps.update_gps(verbose=False)
 
